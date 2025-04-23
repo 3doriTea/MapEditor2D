@@ -1,1 +1,3 @@
-# MapEdit2D
+# MapEditor2D
+
+学校の授業で作っている2Dのマップエディタツール
