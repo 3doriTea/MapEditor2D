@@ -51,6 +51,10 @@
       <Filter>Library</Filter>
     </ClCompile>
     <ClCompile Include="Source\Stage.cpp" />
+    <ClCompile Include="Source\PerlinNoise.cpp" />
+    <ClCompile Include="Source\Frame.cpp" />
+    <ClCompile Include="Source\MapTip.cpp" />
+    <ClCompile Include="Source\MapEdit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Screen.h" />
@@ -115,6 +119,10 @@
     <ClInclude Include="Source\Stage.h">
       <Filter>PlayScene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\PerlinNoise.h" />
+    <ClInclude Include="Source\Frame.h" />
+    <ClInclude Include="Source\MapTip.h" />
+    <ClInclude Include="Source\MapEdit.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Library">

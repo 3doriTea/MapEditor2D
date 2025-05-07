@@ -1,10 +1,16 @@
 #include "PlayScene.h"
 #include <DxLib.h>
 #include "Stage.h"
+#include "MapTip.h"
+#include "MapEdit.h"
 
 PlayScene::PlayScene()
 {
-	new Stage{};
+	new Stage
+	{
+		new MapTip{},
+		new MapEdit{},
+	};
 }
 
 PlayScene::~PlayScene()
