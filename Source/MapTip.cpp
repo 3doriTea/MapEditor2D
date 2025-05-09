@@ -16,6 +16,10 @@ MapTip::MapTip() :
 
 MapTip::~MapTip()
 {
+	for (int i = 0; i < TILE_ROW_COUNT * TILE_COLUMN_COUNT; i++)
+	{
+		DeleteGraph(pHTileHandles_[i]);
+	}
 }
 
 void MapTip::UpdateFrame()

@@ -55,6 +55,7 @@
     <ClCompile Include="Source\Frame.cpp" />
     <ClCompile Include="Source\MapTip.cpp" />
     <ClCompile Include="Source\MapEdit.cpp" />
+    <ClCompile Include="Source\Grid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Screen.h" />
@@ -123,6 +124,7 @@
     <ClInclude Include="Source\Frame.h" />
     <ClInclude Include="Source\MapTip.h" />
     <ClInclude Include="Source\MapEdit.h" />
+    <ClInclude Include="Source\Grid.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Library">

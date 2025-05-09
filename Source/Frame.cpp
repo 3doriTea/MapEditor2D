@@ -29,6 +29,9 @@ void Frame::Update()
 	int mouseX{}, mouseY{};
 	GetMousePoint(&mouseX, &mouseY);
 
+	cursorLocalPositionX = mouseX - offsetX_;
+	cursorLocalPositionY = mouseY - offsetY_;
+
 	isOnCursor_ =
 	{
 		offsetX_ <= mouseX && mouseX <= offsetX_ + width_ &&
@@ -43,7 +46,8 @@ void Frame::Update()
 
 	static int mouseDiffX{};
 	static int mouseDiffY{};
-	if (isOnTitleBar && GetMouseInput() & MOUSE_INPUT_LEFT)
+	if (isOnTitleBar && GetMouseInput() & MOUSE_INPUT_LEFT
+		&& isDragging_ == false)
 	{
 		isDragging_ = true;
 		mouseDiffX = mouseX - offsetX_;

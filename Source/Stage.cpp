@@ -73,7 +73,7 @@ namespace
 Stage::Stage(MapTip* _pMapTip, MapEdit* _pMapEdit) :
 	hImageBackground_{ -1 },
 	//pHTileHandles_{ nullptr }
-	pHTileHandles_{},
+	//pHTileHandles_{},
 	pMapTip_{ _pMapTip },
 	pMapEdit_{ _pMapEdit }
 {
@@ -82,13 +82,13 @@ Stage::Stage(MapTip* _pMapTip, MapEdit* _pMapEdit) :
 	//hImageBackground_ = LoadGraph("bg.png");
 
 	//pHTileHandles_ = new int[TILE_ROW_COUNT * TILE_COLUMN_COUNT];
-	pHTileHandles_ = std::vector<int>(TILE_ROW_COUNT * TILE_COLUMN_COUNT);
-	LoadDivGraph(
-		"bg.png", TILE_ROW_COUNT * TILE_COLUMN_COUNT,
-		TILE_COLUMN_COUNT, TILE_ROW_COUNT,
-		TILE_WIDTH, TILE_HEIGHT,
-		//pHTileHandles_);
-		pHTileHandles_.data());
+	//pHTileHandles_ = std::vector<int>(TILE_ROW_COUNT * TILE_COLUMN_COUNT);
+	//LoadDivGraph(
+	//	"bg.png", TILE_ROW_COUNT * TILE_COLUMN_COUNT,
+	//	TILE_COLUMN_COUNT, TILE_ROW_COUNT,
+	//	TILE_WIDTH, TILE_HEIGHT,
+	//	//pHTileHandles_);
+	//	pHTileHandles_.data());
 	//assert(hImageBackground_ > 0);
 
 	#pragma region ínå`ê∂ê¨
@@ -123,10 +123,10 @@ Stage::Stage(MapTip* _pMapTip, MapEdit* _pMapEdit) :
 Stage::~Stage()
 {
 	//DeleteGraph(hImageBackground_);
-	for (int i = 0; i < TILE_ROW_COUNT * TILE_COLUMN_COUNT; i++)
+	/*for (int i = 0; i < TILE_ROW_COUNT * TILE_COLUMN_COUNT; i++)
 	{
 		DeleteGraph(pHTileHandles_[i]);
-	}
+	}*/
 	//delete[] pHTileHandles_;
 }
 
@@ -137,32 +137,32 @@ void Stage::Update()
 
 void Stage::Draw()
 {
-	for (int pickX = 0; pickX < MAP_WIDTH; pickX++)
-	{
-		for (int pickY = 0; pickY < MAP_HEIGHT; pickY++)
-		{
-			int data{ map[pickY][pickX] };
-			/*
-			int sourceTileX{ data % TILE_COLUMN_COUNT };
-			int sourceTileY{ data / TILE_COLUMN_COUNT };*/
-			/*DrawRectGraph(
-				pickX * tileWidth_, pickY * tileHeight_,
-				sourceTileX * tileWidth_, sourceTileY * tileHeight_,
-				tileWidth_, tileHeight_,
-				hImageBackground_, TRUE);*/
-			/*DrawRectGraph(
-				pickX * tileWidth_, pickY * tileHeight_,
-				sourceTileX * tileWidth_, sourceTileY * tileHeight_,
-				tileWidth_, tileHeight_,
-				hImageBackground_, TRUE);*/
-			assert(pHTileHandles_[data] > -1);
-			DrawGraph(
-				pickX * tileWidth_,
-				pickY * tileHeight_,
-				pHTileHandles_[data],// pickY * TILE_ROW_COUNT + pickX
-				TRUE);
-		}
-	}
+	//for (int pickX = 0; pickX < MAP_WIDTH; pickX++)
+	//{
+	//	for (int pickY = 0; pickY < MAP_HEIGHT; pickY++)
+	//	{
+	//		int data{ map[pickY][pickX] };
+	//		/*
+	//		int sourceTileX{ data % TILE_COLUMN_COUNT };
+	//		int sourceTileY{ data / TILE_COLUMN_COUNT };*/
+	//		/*DrawRectGraph(
+	//			pickX * tileWidth_, pickY * tileHeight_,
+	//			sourceTileX * tileWidth_, sourceTileY * tileHeight_,
+	//			tileWidth_, tileHeight_,
+	//			hImageBackground_, TRUE);*/
+	//		/*DrawRectGraph(
+	//			pickX * tileWidth_, pickY * tileHeight_,
+	//			sourceTileX * tileWidth_, sourceTileY * tileHeight_,
+	//			tileWidth_, tileHeight_,
+	//			hImageBackground_, TRUE);*/
+	//		assert(pHTileHandles_[data] > -1);
+	//		DrawGraph(
+	//			pickX * tileWidth_,
+	//			pickY * tileHeight_,
+	//			pHTileHandles_[data],// pickY * TILE_ROW_COUNT + pickX
+	//			TRUE);
+	//	}
+	//}
 }
 
 const int Stage::TILE_ROW_COUNT{ 12 };

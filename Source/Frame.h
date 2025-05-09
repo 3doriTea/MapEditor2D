@@ -21,11 +21,19 @@ public:
 
 	inline bool IsOnCursor() const { return isOnCursor_; }
 
+	inline void GetMosuePointLocal(int* _x, int* _y) const
+	{
+		*_x = cursorLocalPositionX;
+		*_y = cursorLocalPositionY;
+	}
+
 protected:
 	int offsetX_;  // フレームの基点x座標
 	int offsetY_;  // フレームの基点y座標
 	int width_;  // フレームの横幅
 	int height_;  // フレームの縦幅
+	int cursorLocalPositionX;
+	int cursorLocalPositionY;
 
 private:
 	bool showTitleBar_;  // フレームの上の方にタイトルバーを表示するか

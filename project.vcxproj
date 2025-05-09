@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Grid.h" />
     <ClInclude Include="Source\MapEdit.h" />
     <ClInclude Include="Source\MapTip.h" />
     <ClInclude Include="Source\Frame.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Source\Stage.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Grid.cpp" />
     <ClCompile Include="Source\MapEdit.cpp" />
     <ClCompile Include="Source\MapTip.cpp" />
     <ClCompile Include="Source\Frame.cpp" />

@@ -21,7 +21,7 @@ private:
 	int tileWidth_;
 	int tileHeight_;
 	//int* pHTileHandles_;
-	std::vector<int> pHTileHandles_;
+	//std::vector<int> pHTileHandles_;
 
 public:
 	static const int TILE_ROW_COUNT;
