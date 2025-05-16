@@ -28,6 +28,7 @@ void MapEdit::UpdateFrame()
 void MapEdit::DrawFrame()
 {
 #if USE_BOX_GRID
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(0xff * 0.5f));
 	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
 	{
 		DrawLine(
@@ -48,6 +49,7 @@ void MapEdit::DrawFrame()
 			(x + 1) * TILE_WIDTH + offsetX_, (y + 1) * TILE_HEIGHT + offsetY_,
 			0xffffff, FALSE);*/
 	}
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0x00);
 #endif
 
 	DrawBox(  // Žü‚è‚Ì˜gü‚ð•`‰æ‚·‚é
@@ -73,13 +75,24 @@ void MapEdit::DrawFrame()
 	int localX{}, localY{};
 	GetMosuePointLocal(&localX, &localY);
 
+	if (localX < 0 || localY < 0)
+	{
+		return;  // ”ÍˆÍŠO‚È‚ç‘I‘ð˜g•\Ž¦‚µ‚È‚¢
+	}
+
 	int touchTileX{}, touchTileY{};
 	grid_.ToTile(localX, localY, &touchTileX, &touchTileY);
 
+	if (false == (
+		0 <= touchTileX && touchTileX < EDIT_TILE_COLUMN_COUNT &&
+		0 <= touchTileY && touchTileY < EDIT_TILE_ROW_COUNT))
+	{
+		return;  // ”ÍˆÍŠO‚È‚ç‘I‘ð˜g‚ð•\Ž¦‚µ‚È‚¢
+	}
+
 	int touchTileLocalX{}, touchTileLocalY{};
 	grid_.ToPosition(touchTileX, touchTileY, &touchTileLocalX, &touchTileLocalY);
-
-	printfDx("(%d, %d)\n", touchTileX, touchTileY);
+	
 	DrawBox(
 		touchTileX * TILE_WIDTH + offsetX_, touchTileY * TILE_HEIGHT + offsetY_,
 		(touchTileX + 1) * TILE_WIDTH + offsetX_, (touchTileY + 1) * TILE_HEIGHT + offsetY_,

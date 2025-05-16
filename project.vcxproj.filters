@@ -56,6 +56,7 @@
     <ClCompile Include="Source\MapTip.cpp" />
     <ClCompile Include="Source\MapEdit.cpp" />
     <ClCompile Include="Source\Grid.cpp" />
+    <ClCompile Include="Source\Input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Screen.h" />
@@ -125,6 +126,8 @@
     <ClInclude Include="Source\MapTip.h" />
     <ClInclude Include="Source\MapEdit.h" />
     <ClInclude Include="Source\Grid.h" />
+    <ClInclude Include="Source\Input.h" />
+    <ClInclude Include="Source\Particle.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Library">
