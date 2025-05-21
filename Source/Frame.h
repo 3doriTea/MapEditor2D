@@ -39,5 +39,7 @@ private:
 	bool showTitleBar_;  // フレームの上の方にタイトルバーを表示するか
 	bool isOnCursor_;  // カーソルがフレームの中にあるかどうか
 	bool isDragging_;  // フレームをドラッグ中か
-};
 
+private:
+	static Frame* druggingFrame_;  // 現在ドラッグ中のフレーム
+};

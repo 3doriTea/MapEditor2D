@@ -2,6 +2,19 @@
 
 #define USE_BOX_GRID 1
 
+namespace
+{
+	static const int INIT_POSITION_X{ 50 };
+	static const int INIT_POSITION_Y{ 50 };
+	static const int TILE_WIDTH{ 32 };
+	static const int TILE_HEIGHT{ 32 };
+
+	enum COLOR
+	{
+		CYAN = 0x00ffff,
+	};
+}
+
 MapEdit::MapEdit() :
 	Frame{ 50, 50, TILE_WIDTH * EDIT_TILE_COLUMN_COUNT, TILE_HEIGHT * EDIT_TILE_ROW_COUNT, true },
 	myMap_(EDIT_TILE_ROW_COUNT * EDIT_TILE_COLUMN_COUNT, -1),
@@ -90,13 +103,10 @@ void MapEdit::DrawFrame()
 		return;  // ”ÍˆÍŠO‚È‚ç‘I‘ð˜g‚ð•\Ž¦‚µ‚È‚¢
 	}
 
-	int touchTileLocalX{}, touchTileLocalY{};
-	grid_.ToPosition(touchTileX, touchTileY, &touchTileLocalX, &touchTileLocalY);
-	
 	DrawBox(
 		touchTileX * TILE_WIDTH + offsetX_, touchTileY * TILE_HEIGHT + offsetY_,
 		(touchTileX + 1) * TILE_WIDTH + offsetX_, (touchTileY + 1) * TILE_HEIGHT + offsetY_,
-		0x00ffff, FALSE, 8);
+		COLOR::CYAN, FALSE, 8);
 }
 
 const int MapEdit::TILE_ROW_COUNT{ 12 };

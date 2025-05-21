@@ -1,6 +1,7 @@
 #pragma once
 #include "Frame.h"
 #include <vector>
+#include "Grid.h"
 
 class MapTip : public Frame
 {
@@ -12,6 +13,7 @@ public:
 	void DrawFrame() override;
 
 private:
+	Grid grid_;
 	std::vector<int> pHTileHandles_;
 
 	static const int TILE_ROW_COUNT;

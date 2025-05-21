@@ -1,4 +1,5 @@
 #include "Frame.h"
+#include "Input.h"
 
 namespace
 {
@@ -26,6 +27,11 @@ Frame::~Frame()
 
 void Frame::Update()
 {
+	if (druggingFrame_ != nullptr && druggingFrame_ != this)
+	{
+		return;
+	}
+
 	int mouseX{}, mouseY{};
 	GetMousePoint(&mouseX, &mouseY);
 
@@ -46,12 +52,13 @@ void Frame::Update()
 
 	static int mouseDiffX{};
 	static int mouseDiffY{};
-	if (isOnTitleBar && GetMouseInput() & MOUSE_INPUT_LEFT
+	if (isOnTitleBar && Input::IsMouseDown(MOUSE_INPUT_LEFT)
 		&& isDragging_ == false)
 	{
 		isDragging_ = true;
 		mouseDiffX = mouseX - offsetX_;
 		mouseDiffY = mouseY - offsetY_;
+		druggingFrame_ = this;
 	}
 
 	if (isDragging_)
@@ -61,6 +68,7 @@ void Frame::Update()
 		if (!(GetMouseInput() & MOUSE_INPUT_LEFT))
 		{
 			isDragging_ = false;
+			druggingFrame_ = nullptr;
 		}
 	}
 
@@ -76,3 +84,5 @@ void Frame::Draw()
 
 	DrawFrame();
 }
+
+Frame* Frame::druggingFrame_{ nullptr };

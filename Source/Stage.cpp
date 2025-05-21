@@ -2,6 +2,7 @@
 #include <cassert>
 #include "MapTip.h"
 #include "MapEdit.h"
+#include "Input.h"
 
 namespace
 {
@@ -132,7 +133,37 @@ Stage::~Stage()
 
 void Stage::Update()
 {
-	//printfDx("Update \n");
+	if (Input::IsMouseDown(MOUSE_INPUT_LEFT))
+	{
+		printfDx("左押された:");
+	}
+	if (Input::IsMouse(MOUSE_INPUT_LEFT))
+	{
+		printfDx("左押されている:");
+	}
+	if (Input::IsMouseUp(MOUSE_INPUT_LEFT))
+	{
+		printfDx("左離されてた:");
+	}
+
+	if (Input::IsMouseDown(MOUSE_INPUT_RIGHT))
+	{
+		printfDx("右押された:");
+	}
+	if (Input::IsMouse(MOUSE_INPUT_RIGHT))
+	{
+		printfDx("右押されている:");
+	}
+	if (Input::IsMouseUp(MOUSE_INPUT_RIGHT))
+	{
+		printfDx("右離されてた:");
+	}
+
+	int mx{}, my{};
+	if (GetMousePoint(&mx, &my) == 0)
+	{
+		printfDx("マウス座標(%d, %d)\n", mx, my);
+	}
 }
 
 void Stage::Draw()
