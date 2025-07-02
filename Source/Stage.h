@@ -15,6 +15,8 @@ public:
 	void Draw() override;
 
 private:
+	int selectedTileIndex_;
+	int selectedTileHandle_;
 	MapTip* pMapTip_;
 	MapEdit* pMapEdit_;
 	int hImageBackground_;

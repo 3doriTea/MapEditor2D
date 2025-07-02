@@ -1,5 +1,7 @@
 #pragma once
 #include "../Library/GameObject.h"
+#include <string>
+
 
 class Frame : public GameObject
 {
@@ -27,6 +29,11 @@ public:
 		*_y = cursorLocalPositionY;
 	}
 
+	inline void SetTitle(const std::string& _title)
+	{
+		frameTitle_ = _title;
+	}
+
 protected:
 	int offsetX_;  // フレームの基点x座標
 	int offsetY_;  // フレームの基点y座標
@@ -39,6 +46,7 @@ private:
 	bool showTitleBar_;  // フレームの上の方にタイトルバーを表示するか
 	bool isOnCursor_;  // カーソルがフレームの中にあるかどうか
 	bool isDragging_;  // フレームをドラッグ中か
+	std::string frameTitle_;  // フレームのタイトル
 
 private:
 	static Frame* druggingFrame_;  // 現在ドラッグ中のフレーム

@@ -45,7 +45,7 @@ namespace
 		{ Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0), Ti(0, 0) },
 	};*/
 	{
-		#include "../map.txt"
+		/*#include "../map.txt"*/
 		/*{ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,137 },
 		{ 0,114,99,115,0,0,0,6,6,6,0,22,7,7,7,7,23,0,0,0,6,6,6,0,0,0,0,0,0,0,0,137 },
 		{ 0,99,99,99,0,0,0,0,0,22,7,7,7,7,7,7,7,23,0,0,0,0,0,0,0,0,0,6,0,0,0,137 },
@@ -133,7 +133,7 @@ Stage::~Stage()
 
 void Stage::Update()
 {
-	if (Input::IsMouseDown(MOUSE_INPUT_LEFT))
+	/*if (Input::IsMouseDown(MOUSE_INPUT_LEFT))
 	{
 		printfDx("左押された:");
 	}
@@ -158,12 +158,24 @@ void Stage::Update()
 	{
 		printfDx("右離されてた:");
 	}
+	printfDx("\n");*/
+
+	int hImage_{};
+	int selectedIndex_{};
+	if (pMapTip_->TryGetSelectedTile(&selectedIndex_, &hImage_) == false)
+	{
+		pMapEdit_->SetSelectedIndex(-1);
+		return;
+	}
+	pMapEdit_->SetSelectedIndex(selectedIndex_);
 
 	int mx{}, my{};
-	if (GetMousePoint(&mx, &my) == 0)
-	{
-		printfDx("マウス座標(%d, %d)\n", mx, my);
-	}
+	GetMousePoint(&mx, &my);
+
+	int sizeX{}, sizeY{};
+	GetGraphSize(hImage_, &sizeX, &sizeY);
+	DrawGraph(mx - sizeX / 2, my - sizeY / 2, hImage_, TRUE);
+	//printfDx("aaaaa\n");
 }
 
 void Stage::Draw()

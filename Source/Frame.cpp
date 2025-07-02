@@ -1,9 +1,12 @@
 #include "Frame.h"
 #include "Input.h"
+#include "Screen.h"
+
 
 namespace
 {
 	int TITLE_BAR_HEIGHT{ 30 };
+	int TITLE_TEXT_OFFSET_X{ 4 };
 }
 
 Frame::Frame(
@@ -17,7 +20,8 @@ Frame::Frame(
 	width_{ _width },
 	height_{ _height },
 	showTitleBar_{ _showTitleBar },
-	isDragging_{ false }
+	isDragging_{ false },
+	frameTitle_{ "" }
 {
 }
 
@@ -69,6 +73,24 @@ void Frame::Update()
 		{
 			isDragging_ = false;
 			druggingFrame_ = nullptr;
+
+			// âÊñ äOÇ…çsÇ¡ÇƒÇ¢ÇÈÇ»ÇÁÉMÉäÉMÉäÇ…ñﬂÇ∑
+			if (offsetX_ < 0)
+			{
+				offsetX_ = 0;
+			}
+			else if (offsetX_ > Screen::WIDTH - width_)
+			{
+				offsetX_ = Screen::WIDTH - width_;
+			}
+			if (offsetY_ - TITLE_BAR_HEIGHT < 0)
+			{
+				offsetY_ = TITLE_BAR_HEIGHT;
+			}
+			else if (offsetY_ > Screen::HEIGHT)
+			{
+				offsetY_ = Screen::HEIGHT;
+			}
 		}
 	}
 
@@ -80,6 +102,8 @@ void Frame::Draw()
 	if (showTitleBar_)
 	{
 		DrawBox(offsetX_, offsetY_, offsetX_ + width_, offsetY_ - TITLE_BAR_HEIGHT, 0xffffff, TRUE);
+		int textOffsetY = -TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - GetFontSize()) / 2;
+		DrawFormatString(TITLE_TEXT_OFFSET_X + offsetX_, textOffsetY + offsetY_, 0x000000, "%s", frameTitle_.c_str());
 	}
 
 	DrawFrame();
