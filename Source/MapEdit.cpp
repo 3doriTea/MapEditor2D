@@ -301,9 +301,11 @@ void MapEdit::SaveMapData(const std::string& _filePath)
 		ofs << map << ",";
 	}*/
 
-	ofs << "HEAD" << std::endl << EDIT_TILE_COLUMN_COUNT << " " << EDIT_TILE_ROW_COUNT << std::endl;
+	ofs << "#TinyMapData" << std::endl;
 
-	ofs << "DATA" << std::endl;
+	ofs << EDIT_TILE_COLUMN_COUNT << " " << EDIT_TILE_ROW_COUNT << std::endl;
+
+	ofs << "#DATA" << std::endl;
 	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
 	{
 		for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
@@ -311,11 +313,16 @@ void MapEdit::SaveMapData(const std::string& _filePath)
 			int handle{ myMap_[x + y * EDIT_TILE_COLUMN_COUNT] };
 			if (handle == -1)
 			{
-				ofs << -1 << " ";
+				ofs << -1;
 			}
 			else
 			{
-				ofs << GetChipIndex(handle) << " ";
+				ofs << GetChipIndex(handle);
+			}
+
+			if (x != EDIT_TILE_COLUMN_COUNT - 1)
+			{
+				ofs << ",";
 			}
 		}
 		ofs << std::endl;
@@ -329,8 +336,27 @@ void MapEdit::LoadMapData(const std::string& _filePath)
 {
 	std::ifstream ifs{ _filePath };
 
+	if (!ifs.is_open())
+	{
+		ifs.close();
+		printfDx("読み込みエラー");
+		return;
+	}
+
 	std::string pick{};
-	while (pick != "HEAD")
+	while (pick != "#TinyMapData")
+	{
+		if (ifs.eof())
+		{
+			ifs.close();
+			MessageBox(nullptr, "読み込みに失敗しました。ファイル形式が違います。",  "読み込みエラー", MB_OK | MB_ICONWARNING);
+			//printfDx("読み込みエラー\n");
+			return;
+		}
+		std::getline(ifs, pick);
+	}
+
+	/*while (pick != "#HEAD")
 	{
 		if (ifs.eof())
 		{
@@ -339,14 +365,14 @@ void MapEdit::LoadMapData(const std::string& _filePath)
 			return;
 		}
 		std::getline(ifs, pick);
-	}
+	}*/
 
 	std::getline(ifs, pick, ' ');
 	int sizeX{ std::stoi(pick) };
 	std::getline(ifs, pick);
 	int sizeY{ std::stoi(pick) };
 
-	while (pick != "DATA")
+	while (pick != "#DATA")
 	{
 		if (ifs.eof())
 		{
@@ -366,7 +392,7 @@ void MapEdit::LoadMapData(const std::string& _filePath)
 		}
 		else
 		{
-			std::getline(ifs, pick, ' ');
+			std::getline(ifs, pick, ',');
 		}
 
 		myMap_.push_back(GetChipHandle(std::stoi(pick)));
