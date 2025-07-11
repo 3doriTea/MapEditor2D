@@ -6,12 +6,7 @@
 class Frame : public GameObject
 {
 public:
-	Frame(
-		int _offsetX,
-		int _offsetY,
-		int _width,
-		int _height,
-		bool _showTitleBar = false);
+	Frame(bool _showTitleBar = false);
 	virtual ~Frame();
 
 	void Update() override;
@@ -23,7 +18,7 @@ public:
 
 	inline bool IsOnCursor() const { return isOnCursor_; }
 
-	inline void GetMosuePointLocal(int* _x, int* _y) const
+	inline void GetMousePointLocal(int* _x, int* _y) const
 	{
 		*_x = cursorLocalPositionX;
 		*_y = cursorLocalPositionY;
@@ -32,6 +27,17 @@ public:
 	inline void SetTitle(const std::string& _title)
 	{
 		frameTitle_ = _title;
+	}
+
+	inline void SetOffset(const int _offsetX, const int _offsetY)
+	{
+		offsetX_ = _offsetX;
+		offsetY_ = _offsetY;
+	}
+	inline void SetSize(const int _width, const int _height)
+	{
+		width_ = _width;
+		height_ = _height;
 	}
 
 protected:

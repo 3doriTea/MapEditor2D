@@ -9,16 +9,11 @@ namespace
 	int TITLE_TEXT_OFFSET_X{ 4 };
 }
 
-Frame::Frame(
-	int _offsetX,
-	int _offsetY,
-	int _width,
-	int _height,
-	bool _showTitleBar) :
-	offsetX_{ _offsetX },
-	offsetY_{ _offsetY },
-	width_{ _width },
-	height_{ _height },
+Frame::Frame(bool _showTitleBar) :
+	offsetX_{ 0 },
+	offsetY_{ 0 },
+	width_{ 0 },
+	height_{ 0 },
 	showTitleBar_{ _showTitleBar },
 	isDragging_{ false },
 	frameTitle_{ "" }

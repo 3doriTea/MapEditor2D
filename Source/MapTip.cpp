@@ -1,31 +1,57 @@
+#define NOMINMAX
 #include "MapTip.h"
 #include "Screen.h"
 #include "Input.h"
+#include <Windows.h>
+#include <cassert>
+#include <algorithm>
+#include "MapChipConfig.h"
 
-MapTip::MapTip() :
-	Frame{ Screen::WIDTH - TILE_WIDTH * SHOW_TILE_COLUMN_COUNT, 0, TILE_WIDTH * SHOW_TILE_COLUMN_COUNT, Screen::HEIGHT },
-	pHTileHandles_{},
-	grid_{ SHOW_TILE_COLUMN_COUNT, SHOW_TILE_COLUMN_COUNT, 32, 32 },
-	selectedIndex_{ -1 }
+namespace
 {
-	pHTileHandles_ = std::vector<int>(TILE_ROW_COUNT * TILE_COLUMN_COUNT);
+	//static const size_t PROFILE_BUFFER_SIZE{ 128 };
+}
+
+MapChip::MapChip() :
+	Frame{ false },
+	pHTileHandles_{},
+	grid_{ config_.MAPCHIP_VIEW_X, config_.MAPCHIP_VIEW_X, config_.TILE_PIX_SIZE, config_.TILE_PIX_SIZE },
+	selectedIndex_{ -1 },
+	showOffsetX_{ 0 },
+	showOffsetY_{ 0 },
+	config_
+	{
+		MapChipConfigBuilder{}
+			.Load("MapChip", "TILE_PIX_SIZE")
+			.Load("MapChip", "TILES_X")
+			.Load("MapChip", "TILES_Y")
+			.Load("MapChip", "MAPCHIP_VIEW_X")
+			.Load("MapChip", "MAPCHIP_VIEW_Y")
+			.Load("MapChip", "MAPCHIP_FRAME_WIDTH")
+			.Load("MapChip", "MAPCHIP_FRAME_HEIGHT")
+			.Build()
+	}
+{
+	SetOffset(Screen::WIDTH - config_.TILE_PIX_SIZE * config_.MAPCHIP_VIEW_X, 0);
+	SetSize(config_.TILE_PIX_SIZE * config_.MAPCHIP_VIEW_X, Screen::HEIGHT);
+
+	pHTileHandles_ = std::vector<int>(config_.TILES_Y * config_.TILES_X);
 	LoadDivGraph(
-		"bg.png", TILE_ROW_COUNT * TILE_COLUMN_COUNT,
-		TILE_COLUMN_COUNT, TILE_ROW_COUNT,
-		TILE_WIDTH, TILE_HEIGHT,
-		//pHTileHandles_);
+		"bg.png", config_.TILES_Y * config_.TILES_X,
+		config_.TILES_X, config_.TILES_Y,
+		config_.TILE_PIX_SIZE, config_.TILE_PIX_SIZE,
 		pHTileHandles_.data());
 }
 
-MapTip::~MapTip()
+MapChip::~MapChip()
 {
-	for (int i = 0; i < TILE_ROW_COUNT * TILE_COLUMN_COUNT; i++)
+	for (int i = 0; i < config_.TILES_Y * config_.TILES_X; i++)
 	{
 		DeleteGraph(pHTileHandles_[i]);
 	}
 }
 
-bool MapTip::TryGetSelectedTile(int* _pIndex, int* _pHandle)
+bool MapChip::TryGetSelectedTile(int* _pIndex, int* _pHandle)
 {
 	if (selectedIndex_ == -1)
 	{
@@ -38,89 +64,136 @@ bool MapTip::TryGetSelectedTile(int* _pIndex, int* _pHandle)
 	return true;
 }
 
-void MapTip::UpdateFrame()
+void MapChip::UpdateFrame()
 {
-	if (IsOnCursor())
-	{
-		tileOffset_ += -GetMouseWheelRotVol() * SHOW_TILE_COLUMN_COUNT;
-		if (tileOffset_ < 0)
-		{
-			tileOffset_ = 0;
-		}
-	}
-
 	// 右クリックキャンセル
 	if (Input::IsMouseDown(MOUSE_INPUT_RIGHT))
 	{
 		selectedIndex_ = -1;
 	}
+
+	if (IsOnCursor())
+	{
+		if (Input::IsMouseDown(MOUSE_INPUT_LEFT))
+		{
+			int touchTileX{}, touchTileY{};
+			GetTouchTilePos(&touchTileX, &touchTileY);
+			selectedIndex_ = GetTileIndex(touchTileX, touchTileY);//touchTileY * config_.MAPCHIP_VIEW_X + touchTileX + tileOffset_;
+		}
+
+		int scroll = GetMouseWheelRotVol();
+
+		if (Input::IsKey(KEY_INPUT_LSHIFT))
+		{
+			showOffsetX_ -= scroll;
+			if (showOffsetX_ < 0)
+			{
+				showOffsetX_ = 0;
+			}
+			else if (showOffsetX_ >= config_.TILES_X)
+			{
+				showOffsetX_ = config_.TILES_X - 1;
+			}
+		}
+		else
+		{
+			showOffsetY_ -= scroll;
+			if (showOffsetY_ < 0)
+			{
+				showOffsetY_ = 0;
+			}
+			else if (showOffsetY_ >= config_.TILES_Y)
+			{
+				showOffsetY_ = config_.TILES_Y - 1;
+			}
+		}
+	}
 }
 
-void MapTip::DrawFrame()
+void MapChip::DrawFrame()
 {
+	// カーソルが入っていないなら半透明に描画する
 	if (IsOnCursor() == false)
 	{
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(0xff * 0.5f));
 	}
 
+	// 各タイルの描画
 	DrawBox(offsetX_, offsetY_, offsetX_ + width_, offsetY_ + height_, 0xffffff, TRUE);
-	for (int i = 0; i < TILE_ROW_COUNT * TILE_COLUMN_COUNT; i++)
+	
+	for (int y = 0; y < config_.TILES_Y; y++)
 	{
-		int pickX{ i % 8 };
-		int pickY{ i / 8 };
-
-		if ((i + tileOffset_) >= pHTileHandles_.size())
+		int tileY = y + showOffsetY_;
+		if (tileY < 0 || config_.TILES_Y <= tileY)
 		{
-			break;
+			continue;
 		}
 
-		DrawGraph(
-			pickX * TILE_WIDTH + offsetX_,
-			pickY * TILE_HEIGHT + offsetY_,
-			pHTileHandles_[i + tileOffset_],// pickY * TILE_ROW_COUNT + pickX
-			TRUE);
+		for (int x = 0; x < config_.TILES_X; x++)
+		{
+			int tileX = x + showOffsetX_;
+			if (tileX < 0 || config_.TILES_X <= tileX)
+			{
+				continue;
+			}
+
+			DrawGraph(
+				x * config_.TILE_PIX_SIZE + offsetX_,
+				y * config_.TILE_PIX_SIZE + offsetY_,
+				GetTileHandle(tileX, tileY),// pickY * config_.TILES_Y + pickX
+				TRUE);
+		}
 	}
+	
+	//for (int i = 0; i < config_.TILES_Y * config_.TILES_X; i++)
+	//{
+	//	int pickX{ i % 8 };
+	//	int pickY{ i / 8 };
+	//	if ((i + tileOffset_) >= pHTileHandles_.size())
+	//	{
+	//		break;
+	//	}
+	//	DrawGraph(
+	//		pickX * config_.TILE_PIX_SIZE + offsetX_,
+	//		pickY * config_.TILE_PIX_SIZE + offsetY_,
+	//		pHTileHandles_[i + tileOffset_],// pickY * config_.TILES_Y + pickX
+	//		TRUE);
+	//}
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0x00);
 
+	// 選択タイルの表示
 	if (selectedIndex_ != -1)
 	{
-		int selectedX_ = selectedIndex_ % SHOW_TILE_COLUMN_COUNT;
-		int selectedY_ = selectedIndex_ / SHOW_TILE_COLUMN_COUNT;
+		int selectedX_ = selectedIndex_ % config_.MAPCHIP_VIEW_X;
+		int selectedY_ = selectedIndex_ / config_.MAPCHIP_VIEW_X;
 		DrawBox(
-			selectedX_ * TILE_WIDTH + offsetX_ - SELECTED_FRAME_PADDING, selectedY_ * TILE_HEIGHT + offsetY_ - SELECTED_FRAME_PADDING,
-			(selectedX_ + 1) * TILE_WIDTH + offsetX_ + SELECTED_FRAME_PADDING, (selectedY_ + 1) * TILE_HEIGHT + offsetY_ + SELECTED_FRAME_PADDING,
+			selectedX_ * config_.TILE_PIX_SIZE + offsetX_ - SELECTED_FRAME_PADDING, selectedY_ * config_.TILE_PIX_SIZE + offsetY_ - SELECTED_FRAME_PADDING,
+			(selectedX_ + 1) * config_.TILE_PIX_SIZE + offsetX_ + SELECTED_FRAME_PADDING, (selectedY_ + 1) * config_.TILE_PIX_SIZE + offsetY_ + SELECTED_FRAME_PADDING,
 			0xff00ff, TRUE);
 		DrawGraph(
-			selectedX_ * TILE_WIDTH + offsetX_,
-			selectedY_ * TILE_HEIGHT + offsetY_,
-			pHTileHandles_[selectedIndex_],// pickY * TILE_ROW_COUNT + pickX
+			selectedX_ * config_.TILE_PIX_SIZE + offsetX_,
+			selectedY_ * config_.TILE_PIX_SIZE + offsetY_,
+			pHTileHandles_[selectedIndex_],// pickY * config_.TILES_Y + pickX
 			TRUE);
 	}
 
+	// カーソルが選択しているタイルの枠を表示
 	if (IsOnCursor())
 	{
-		int localX{}, localY{};
-		GetMosuePointLocal(&localX, &localY);
-
 		int touchTileX{}, touchTileY{};
-		grid_.ToTile(localX, localY, &touchTileX, &touchTileY);
-		
+		GetTouchTilePos(&touchTileX, &touchTileY);
+
 		DrawBox(offsetX_, offsetY_, offsetX_ + width_, offsetY_ + height_, 0xff0000, FALSE);
 
 		DrawBox(
-			touchTileX * TILE_WIDTH + offsetX_, touchTileY * TILE_HEIGHT + offsetY_,
-			(touchTileX + 1) * TILE_WIDTH + offsetX_, (touchTileY + 1) * TILE_HEIGHT + offsetY_,
+			touchTileX * config_.TILE_PIX_SIZE + offsetX_, touchTileY * config_.TILE_PIX_SIZE + offsetY_,
+			(touchTileX + 1) * config_.TILE_PIX_SIZE + offsetX_, (touchTileY + 1) * config_.TILE_PIX_SIZE + offsetY_,
 			0x00ffff, FALSE, 4);
-
-		if (Input::IsMouseDown(MOUSE_INPUT_LEFT))
-		{
-			selectedIndex_ = touchTileY * SHOW_TILE_COLUMN_COUNT + touchTileX + tileOffset_;
-		}
 	}
 
 }
-int MapTip::GetChipIndex(int _hImage)
+int MapChip::GetChipIndex(int _hImage) const
 {
 	for (int i = 0; i < pHTileHandles_.size(); i++)
 	{
@@ -131,13 +204,38 @@ int MapTip::GetChipIndex(int _hImage)
 	}
 	return -1;
 }
-const int MapTip::SELECTED_FRAME_PADDING{ 5 };
+void MapChip::GetTouchTilePos(int* _x, int* _y) const
+{
+	int localX{}, localY{};
+	GetMousePointLocal(&localX, &localY);
+	grid_.ToTile(localX, localY, _x, _y);
+}
+int MapChip::GetTileIndex(const int _localTileX, const int _localTileY) const
+{
+	int tileY = _localTileX + showOffsetY_;
+	if (tileY < 0 || config_.TILES_Y <= tileY)
+	{
+		return -1;
+	}
 
-const int MapTip::TILE_COLUMN_COUNT{ 16 };
-const int MapTip::TILE_ROW_COUNT{ 12 };
+	int tileX = _localTileY + showOffsetX_;
+	if (tileX < 0 || config_.TILES_X <= tileX)
+	{
+		return -1;
+	}
 
-const int MapTip::TILE_WIDTH{ 32 };
-const int MapTip::TILE_HEIGHT{ 32 };
-
-const int MapTip::SHOW_TILE_COLUMN_COUNT{ 8 };
-const int MapTip::SHOW_TILE_ROW_COUNT{ 0 };
+	return GetChipIndex(GetTileHandle(tileX, tileY));
+}
+int MapChip::GetTileHandle(const int _tileX, const int _tileY) const
+{
+	if (_tileX < 0 || config_.TILES_X <= _tileX)
+	{
+		return -1;
+	}
+	if (_tileY < 0 || config_.TILES_Y <= _tileY)
+	{
+		return -1;
+	}
+	return pHTileHandles_[config_.TILES_X * _tileY + _tileX];
+}
+const int MapChip::SELECTED_FRAME_PADDING{ 5 };

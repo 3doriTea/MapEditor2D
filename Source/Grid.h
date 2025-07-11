@@ -30,6 +30,12 @@ public:
 		const int _srcTileX, const int _srcTileY,
 		int* _resultPositionX, int* _resultPositionY) const;
 
+	inline void SetSizePix(const int _width, const int _height)
+	{
+		widthPix_ = _width;
+		heightPix_ = _height;
+	}
+
 private:
 	int widthPix_;  // グリッド上座標の最大値 X
 	int heightPix_;  // グリッド上座標の最大値 Y

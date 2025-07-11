@@ -9,7 +9,7 @@ PlayScene::PlayScene()
 {
 	new Stage
 	{
-		new MapTip{},
+		new MapChip{},
 		new MapEdit{},
 	};
 }

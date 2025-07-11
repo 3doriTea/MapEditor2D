@@ -71,7 +71,7 @@ namespace
 	};
 }
 
-Stage::Stage(MapTip* _pMapTip, MapEdit* _pMapEdit) :
+Stage::Stage(MapChip* _pMapTip, MapEdit* _pMapEdit) :
 	hImageBackground_{ -1 },
 	//pHTileHandles_{ nullptr }
 	//pHTileHandles_{},
@@ -117,8 +117,8 @@ Stage::Stage(MapTip* _pMapTip, MapEdit* _pMapEdit) :
 	//GetGraphSize(hImageBackground_, &width, &height);
 	//tileWidth_ = width / TILE_COLUMN_COUNT;
 	//tileHeight_ = height / TILE_ROW_COUNT;
-	tileWidth_ = TILE_WIDTH;
-	tileHeight_ = TILE_HEIGHT;
+	tileWidth_ = __TILE_PIX_SIZE;
+	tileHeight_ = TILE_PIX_SIZE;
 }
 
 Stage::~Stage()
@@ -211,5 +211,5 @@ void Stage::Draw()
 const int Stage::TILE_ROW_COUNT{ 12 };
 const int Stage::TILE_COLUMN_COUNT{ 16 };
 
-const int Stage::TILE_WIDTH{ 32 };
-const int Stage::TILE_HEIGHT{ 32 };
+const int Stage::__TILE_PIX_SIZE{ 32 };
+const int Stage::TILE_PIX_SIZE{ 32 };

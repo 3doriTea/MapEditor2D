@@ -15,8 +15,6 @@ namespace
 {
 	static const int INIT_POSITION_X{ 50 };
 	static const int INIT_POSITION_Y{ 50 };
-	static const int TILE_WIDTH{ 32 };
-	static const int TILE_HEIGHT{ 32 };
 
 	enum COLOR
 	{
@@ -25,15 +23,30 @@ namespace
 }
 
 MapEdit::MapEdit() :
-	Frame{ 50, 50, TILE_WIDTH * EDIT_TILE_COLUMN_COUNT, TILE_HEIGHT * EDIT_TILE_ROW_COUNT, true },
+	Frame{ true },
 	myMap_(EDIT_TILE_ROW_COUNT * EDIT_TILE_COLUMN_COUNT, -1),
-	grid_{ TILE_WIDTH * EDIT_TILE_COLUMN_COUNT, TILE_HEIGHT * EDIT_TILE_ROW_COUNT, 32, 32 }
+	grid_{ config_.TILE_PIX_SIZE * EDIT_TILE_COLUMN_COUNT, config_.TILE_PIX_SIZE * EDIT_TILE_ROW_COUNT, 32, 32 },
+	config_
+	{
+		MapChipConfigBuilder{}
+			.Load("MapChip", "TILE_PIX_SIZE")
+			.Load("MapChip", "TILES_X")
+			.Load("MapChip", "TILES_Y")
+			.Load("MapChip", "MAPCHIP_VIEW_X")
+			.Load("MapChip", "MAPCHIP_VIEW_Y")
+			.Load("MapChip", "MAPCHIP_FRAME_WIDTH")
+			.Load("MapChip", "MAPCHIP_FRAME_HEIGHT")
+			.Build()
+	}
 {
-	pHTileHandles_ = std::vector<int>(TILE_ROW_COUNT * TILE_COLUMN_COUNT);
+	SetOffset(50, 50);
+	SetSize(config_.TILE_PIX_SIZE * EDIT_TILE_COLUMN_COUNT, config_.TILE_PIX_SIZE * EDIT_TILE_ROW_COUNT);
+
+	pHTileHandles_ = std::vector<int>(config_.TILES_Y * config_.TILES_X);
 	LoadDivGraph(
-		"bg.png", TILE_ROW_COUNT * TILE_COLUMN_COUNT,
-		TILE_COLUMN_COUNT, TILE_ROW_COUNT,
-		TILE_WIDTH, TILE_HEIGHT,
+		"bg.png", config_.TILES_Y * TILE_COLUMN_COUNT,
+		TILE_COLUMN_COUNT, config_.TILES_Y,
+		config_.TILE_PIX_SIZE, config_.TILE_PIX_SIZE,
 		pHTileHandles_.data());
 
 	indexMap_.clear();
@@ -47,7 +60,7 @@ MapEdit::MapEdit() :
 
 MapEdit::~MapEdit()
 {
-	/*for (int i = 0; i < TILE_ROW_COUNT * TILE_COLUMN_COUNT; i++)
+	/*for (int i = 0; i < config_.TILES_Y * TILE_COLUMN_COUNT; i++)
 	{
 		DeleteGraph(pHTileHandles_[i]);
 	}*/
@@ -110,12 +123,7 @@ void MapEdit::UpdateFrame()
 			printfDx("ロードキャンセル\n");
 			// キャンセルされた
 		}
-
 	}
-	/*if (IsOnCursor())
-	{
-		printfDx("in");
-	}*/
 }
 
 void MapEdit::DrawFrame()
@@ -125,7 +133,7 @@ void MapEdit::DrawFrame()
 		for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
 		{
 			const int INDEX = y * EDIT_TILE_COLUMN_COUNT + x;
-			DrawGraph(offsetX_ + x * TILE_WIDTH, offsetY_ + y * TILE_HEIGHT,
+			DrawGraph(offsetX_ + x * config_.TILE_PIX_SIZE, offsetY_ + y * config_.TILE_PIX_SIZE,
 				myMap_[INDEX], TRUE);
 		}
 	}
@@ -135,17 +143,17 @@ void MapEdit::DrawFrame()
 	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
 	{
 		DrawLine(
-			offsetX_, y * TILE_HEIGHT + offsetY_,
-			EDIT_TILE_COLUMN_COUNT * TILE_WIDTH + offsetX_,
-			y * TILE_WIDTH + offsetY_,
+			offsetX_, y * config_.TILE_PIX_SIZE + offsetY_,
+			EDIT_TILE_COLUMN_COUNT * config_.TILE_PIX_SIZE + offsetX_,
+			y * config_.TILE_PIX_SIZE + offsetY_,
 			0xffffff, 1);
 	}
 
 	for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
 	{
 		DrawLine(
-			x * TILE_WIDTH + offsetX_, offsetY_,
-			x * TILE_WIDTH + offsetX_, EDIT_TILE_ROW_COUNT * TILE_WIDTH + offsetY_,
+			x * config_.TILE_PIX_SIZE + offsetX_, offsetY_,
+			x * config_.TILE_PIX_SIZE + offsetX_, EDIT_TILE_ROW_COUNT * config_.TILE_PIX_SIZE + offsetY_,
 			0xffffff, 1);
 		/*DrawBox(
 			x * TILE_WIDTH + offsetX_, y * TILE_HEIGHT + offsetY_,
@@ -157,7 +165,7 @@ void MapEdit::DrawFrame()
 
 	DrawBox(  // 周りの枠線を描画する
 		offsetX_, offsetY_,
-		EDIT_TILE_COLUMN_COUNT * TILE_WIDTH + offsetX_, EDIT_TILE_ROW_COUNT * TILE_HEIGHT + offsetY_,
+		EDIT_TILE_COLUMN_COUNT * config_.TILE_PIX_SIZE + offsetX_, EDIT_TILE_ROW_COUNT * config_.TILE_PIX_SIZE + offsetY_,
 		0xff0000, FALSE, 3
 	);
 
@@ -176,7 +184,7 @@ void MapEdit::DrawFrame()
 #endif
 
 	int localX{}, localY{};
-	GetMosuePointLocal(&localX, &localY);
+	GetMousePointLocal(&localX, &localY);
 
 	int touchTileX{}, touchTileY{};
 	grid_.ToTile(localX, localY, &touchTileX, &touchTileY);
@@ -194,8 +202,8 @@ void MapEdit::DrawFrame()
 	}
 
 	DrawBox(
-		touchTileX * TILE_WIDTH + offsetX_, touchTileY * TILE_HEIGHT + offsetY_,
-		(touchTileX + 1) * TILE_WIDTH + offsetX_, (touchTileY + 1) * TILE_HEIGHT + offsetY_,
+		touchTileX * config_.TILE_PIX_SIZE + offsetX_, touchTileY * config_.TILE_PIX_SIZE + offsetY_,
+		(touchTileX + 1) * config_.TILE_PIX_SIZE + offsetX_, (touchTileY + 1) * config_.TILE_PIX_SIZE + offsetY_,
 		COLOR::CYAN, FALSE, 8);
 
 	if (selectedIndex_ == -1)
@@ -292,7 +300,7 @@ void MapEdit::SaveMapData(const std::string& _filePath)
 
 	std::ofstream ofs{ _filePath };
 
-	MapTip* mapTip = FindGameObject<MapTip>();
+	MapChip* mapTip = FindGameObject<MapChip>();
 
 	//ofs << "data1" << " " << "data2" << std::endl;
 
@@ -398,58 +406,9 @@ void MapEdit::LoadMapData(const std::string& _filePath)
 		myMap_.push_back(GetChipHandle(std::stoi(pick)));
 	}
 	printfDx("File loaded.\n");
-
-	/*myMap_.clear();
-	std::string pickLine{};
-
-	while (pickLine != "#HEAD")
-	{
-		if (ifs.eof())
-		{
-			assert(false && "ファイル内ヘッドが見つからない");
-			return;
-		}
-		std::getline(ifs, pickLine);
-	}
-
-	std::getline(ifs, pickLine);
-
-	std::stringstream lineSS{ pickLine };
-
-
-
-	std::getline(lineSS, pickLine, ' ');*/
-
-	/*while (std::getline(ifs, pick , ','))
-	{
-		if (std::all_of(pick.cbegin(), pick.cend(), isdigit))
-		{
-			myMap_.push_back(std::stoi(pick));
-		}
-	}*/
-
-	/*std::string line{};
-	std::getline(ifs, line);
-
-	std::*/
-
-	/*pick << ifs;
-
-	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
-	{
-		for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
-		{
-			ofs << myMap_[x + y * EDIT_TILE_COLUMN_COUNT] << " ";
-		}
-		ofs << std::endl;
-	}*/
 }
 
-const int MapEdit::TILE_ROW_COUNT{ 12 };
 const int MapEdit::TILE_COLUMN_COUNT{ 16 };
-
-const int MapEdit::TILE_WIDTH{ 32 };
-const int MapEdit::TILE_HEIGHT{ 32 };
 
 const int MapEdit::EDIT_TILE_COLUMN_COUNT{ 20 };
 const int MapEdit::EDIT_TILE_ROW_COUNT{ 20 };

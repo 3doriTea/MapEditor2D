@@ -3,6 +3,7 @@
 #include <vector>
 #include "Grid.h"
 #include <map>
+#include "MapChipConfig.h"
 
 class MapEdit : public Frame
 {
@@ -26,12 +27,24 @@ private:
 
 	int ToSafeNeighbor(const int _from, const int _to);
 
+	/// <summary>
+	/// ハンドル to インデックス
+	/// </summary>
+	/// <param name="_hImage"></param>
+	/// <returns></returns>
 	int GetChipIndex(int _hImage);
+	/// <summary>
+	/// インデックス to ハンドル
+	/// </summary>
+	/// <param name="_index"></param>
+	/// <returns></returns>
 	int GetChipHandle(int _index);
 
 	void SaveMapData(const std::string& _filePath);
 	void LoadMapData(const std::string& _filePath);
 private:
+	MapChipConfig config_;
+
 	Grid grid_;
 	std::vector<int> pHTileHandles_;
 	std::vector<int> myMap_;
@@ -40,10 +53,7 @@ private:
 
 	int selectedIndex_;
 
-	static const int TILE_ROW_COUNT;
 	static const int TILE_COLUMN_COUNT;
-	static const int TILE_WIDTH;
-	static const int TILE_HEIGHT;
 
 	static const int EDIT_TILE_COLUMN_COUNT;
 	static const int EDIT_TILE_ROW_COUNT;

@@ -2,13 +2,13 @@
 #include "../Library/GameObject.h"
 #include <vector>
 
-class MapTip;
+class MapChip;
 class MapEdit;
 
 class Stage : public GameObject
 {
 public:
-	Stage(MapTip* _pMapTip, MapEdit* _pMapEdit);
+	Stage(MapChip* _pMapTip, MapEdit* _pMapEdit);
 	~Stage();
 
 	void Update() override;
@@ -17,7 +17,7 @@ public:
 private:
 	int selectedTileIndex_;
 	int selectedTileHandle_;
-	MapTip* pMapTip_;
+	MapChip* pMapTip_;
 	MapEdit* pMapEdit_;
 	int hImageBackground_;
 	int tileWidth_;
@@ -28,6 +28,6 @@ private:
 public:
 	static const int TILE_ROW_COUNT;
 	static const int TILE_COLUMN_COUNT;
-	static const int TILE_WIDTH;
-	static const int TILE_HEIGHT;
+	static const int __TILE_PIX_SIZE;
+	static const int TILE_PIX_SIZE;
 };
