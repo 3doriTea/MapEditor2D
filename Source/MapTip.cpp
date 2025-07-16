@@ -112,8 +112,14 @@ void MapChip::UpdateFrame()
 
 void MapChip::DrawFrame()
 {
-	// カーソルが入っていないなら半透明に描画する
-	if (IsOnCursor() == false)
+	if (IsOnCursor())  // カーソルが入っているとき、枠を赤く表示する
+	{
+		DrawBox(
+			offsetX_ - 1, offsetY_ - 1,
+			offsetX_ + width_ + 1, offsetY_ + height_ + 1,
+			0xff0000, FALSE);
+	}
+	else  // カーソルが入っていないなら全体を半透明に描画する
 	{
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(0xff * 0.5f));
 	}
@@ -144,38 +150,29 @@ void MapChip::DrawFrame()
 				TRUE);
 		}
 	}
-	
-	//for (int i = 0; i < config_.TILES_Y * config_.TILES_X; i++)
-	//{
-	//	int pickX{ i % 8 };
-	//	int pickY{ i / 8 };
-	//	if ((i + tileOffset_) >= pHTileHandles_.size())
-	//	{
-	//		break;
-	//	}
-	//	DrawGraph(
-	//		pickX * config_.TILE_PIX_SIZE + offsetX_,
-	//		pickY * config_.TILE_PIX_SIZE + offsetY_,
-	//		pHTileHandles_[i + tileOffset_],// pickY * config_.TILES_Y + pickX
-	//		TRUE);
-	//}
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0x00);
 
 	// 選択タイルの表示
+	// 選択されているタイルがある
 	if (selectedIndex_ != -1)
 	{
-		int selectedX_ = selectedIndex_ % config_.MAPCHIP_VIEW_X;
-		int selectedY_ = selectedIndex_ / config_.MAPCHIP_VIEW_X;
-		DrawBox(
-			selectedX_ * config_.TILE_PIX_SIZE + offsetX_ - SELECTED_FRAME_PADDING, selectedY_ * config_.TILE_PIX_SIZE + offsetY_ - SELECTED_FRAME_PADDING,
-			(selectedX_ + 1) * config_.TILE_PIX_SIZE + offsetX_ + SELECTED_FRAME_PADDING, (selectedY_ + 1) * config_.TILE_PIX_SIZE + offsetY_ + SELECTED_FRAME_PADDING,
-			0xff00ff, TRUE);
-		DrawGraph(
-			selectedX_ * config_.TILE_PIX_SIZE + offsetX_,
-			selectedY_ * config_.TILE_PIX_SIZE + offsetY_,
-			pHTileHandles_[selectedIndex_],// pickY * config_.TILES_Y + pickX
-			TRUE);
+		int selectedTileX{}, selectedTileY{};
+		ToLocalTilePos(selectedIndex_, &selectedTileX, &selectedTileY);
+
+		// 選択されているタイルが表示範囲内
+		if (CheckIsInView(selectedTileX, selectedTileY))
+		{
+			DrawBox(
+				selectedTileX * config_.TILE_PIX_SIZE + offsetX_ - SELECTED_FRAME_PADDING, selectedTileY * config_.TILE_PIX_SIZE + offsetY_ - SELECTED_FRAME_PADDING,
+				(selectedTileX + 1) * config_.TILE_PIX_SIZE + offsetX_ + SELECTED_FRAME_PADDING, (selectedTileY + 1) * config_.TILE_PIX_SIZE + offsetY_ + SELECTED_FRAME_PADDING,
+				0xff00ff, TRUE);
+			DrawGraph(
+				selectedTileX * config_.TILE_PIX_SIZE + offsetX_,
+				selectedTileY * config_.TILE_PIX_SIZE + offsetY_,
+				pHTileHandles_[selectedIndex_],
+				TRUE);
+		}
 	}
 
 	// カーソルが選択しているタイルの枠を表示
@@ -184,12 +181,14 @@ void MapChip::DrawFrame()
 		int touchTileX{}, touchTileY{};
 		GetTouchTilePos(&touchTileX, &touchTileY);
 
-		DrawBox(offsetX_, offsetY_, offsetX_ + width_, offsetY_ + height_, 0xff0000, FALSE);
-
-		DrawBox(
-			touchTileX * config_.TILE_PIX_SIZE + offsetX_, touchTileY * config_.TILE_PIX_SIZE + offsetY_,
-			(touchTileX + 1) * config_.TILE_PIX_SIZE + offsetX_, (touchTileY + 1) * config_.TILE_PIX_SIZE + offsetY_,
-			0x00ffff, FALSE, 4);
+		// カーソルが選択しているタイルが表示範囲内
+		if (CheckIsInView(touchTileX, touchTileY))
+		{
+			DrawBox(
+				touchTileX * config_.TILE_PIX_SIZE + offsetX_, touchTileY * config_.TILE_PIX_SIZE + offsetY_,
+				(touchTileX + 1) * config_.TILE_PIX_SIZE + offsetX_, (touchTileY + 1) * config_.TILE_PIX_SIZE + offsetY_,
+				0x00ffff, FALSE, 4);
+		}
 	}
 
 }
@@ -204,21 +203,29 @@ int MapChip::GetChipIndex(int _hImage) const
 	}
 	return -1;
 }
+
 void MapChip::GetTouchTilePos(int* _x, int* _y) const
 {
 	int localX{}, localY{};
 	GetMousePointLocal(&localX, &localY);
 	grid_.ToTile(localX, localY, _x, _y);
 }
+
+void MapChip::ToLocalTilePos(const int _index, int* _x, int* _y) const
+{
+	*_x = _index % config_.TILES_X - showOffsetX_;
+	*_y = _index / config_.TILES_X - showOffsetY_;
+}
+
 int MapChip::GetTileIndex(const int _localTileX, const int _localTileY) const
 {
-	int tileY = _localTileX + showOffsetY_;
+	int tileY = _localTileY + showOffsetY_;
 	if (tileY < 0 || config_.TILES_Y <= tileY)
 	{
 		return -1;
 	}
 
-	int tileX = _localTileY + showOffsetX_;
+	int tileX = _localTileX + showOffsetX_;
 	if (tileX < 0 || config_.TILES_X <= tileX)
 	{
 		return -1;
@@ -238,4 +245,14 @@ int MapChip::GetTileHandle(const int _tileX, const int _tileY) const
 	}
 	return pHTileHandles_[config_.TILES_X * _tileY + _tileX];
 }
+
+bool MapChip::CheckIsInView(const int _tileX, const int _tileY) const
+{
+	return
+	{
+		0 <= _tileX && _tileX < config_.MAPCHIP_VIEW_X
+			&& 0 <= _tileY && _tileY < config_.MAPCHIP_VIEW_Y
+	};
+}
+
 const int MapChip::SELECTED_FRAME_PADDING{ 5 };

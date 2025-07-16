@@ -24,10 +24,25 @@ public:
 	/// <param name="_x">タイル座標 x ポインタ渡し</param>
 	/// <param name="_y">タイル座標 y ポインタ渡し</param>
 	void GetTouchTilePos(int* _x, int* _y) const;
+	/// <summary>
+	/// 相対的なタイル座標に変換する
+	/// </summary>
+	/// <param name="_index">タイルのインデックス</param>
+	/// <param name="_x">タイル座標 x</param>
+	/// <param name="_y">タイル座標 y</param>
+	void ToLocalTilePos(const int _index, int* _x, int* _y) const;
 
 	int GetTileIndex(const int _localTileX, const int _localTileY) const;
 
 	int GetTileHandle(const int _tileX, const int _tileY) const;
+
+	/// <summary>
+	/// タイル座標が表示範囲内かチェックする
+	/// </summary>
+	/// <param name="_tileX">絶対タイル座標</param>
+	/// <param name="_tileY">絶対タイル座標</param>
+	/// <returns>タイル座標が表示範囲内である true / false</returns>
+	bool CheckIsInView(const int _tileX, const int _tileY) const;
 
 private:
 	const MapChipConfig config_;
