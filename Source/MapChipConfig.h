@@ -17,6 +17,8 @@ struct MapChipConfig
 	int MAPCHIP_VIEW_Y;        // 表示されるタイル数 y
 	int MAPCHIP_FRAME_WIDTH;   // マップチップ画面フレームの横幅
 	int MAPCHIP_FRAME_HEIGHT;  // マップチップ画面フレームの高さ
+	int MAPEDIT_VIEW_X;
+	int MAPEDIT_VIEW_Y;
 };
 
 class MapChipConfigElement
@@ -70,6 +72,20 @@ public: \
 		_config.KeyName = LoadInt();\
 	}\
 };
+
+#define MAPEDIT_CONFIG_ELEMENT(Section, KeyName) \
+class KeyName : public MapEditConfigElement \
+{ \
+public: \
+	inline KeyName() : \
+		MapEditConfigElement{ Section, #KeyName } \
+	{ \
+	} \
+	inline void Load(MapEditConfig& _config) override \
+	{\
+		_config.KeyName = LoadInt();\
+	}\
+};
 #pragma endregion
 
 #pragma region element追加マクロ
@@ -85,6 +101,8 @@ MAPCHIP_CONFIG_ELEMENT("MapChip", MAPCHIP_VIEW_X);
 MAPCHIP_CONFIG_ELEMENT("MapChip", MAPCHIP_VIEW_Y);
 MAPCHIP_CONFIG_ELEMENT("MapChip", MAPCHIP_FRAME_WIDTH);
 MAPCHIP_CONFIG_ELEMENT("MapChip", MAPCHIP_FRAME_HEIGHT);
+MAPCHIP_CONFIG_ELEMENT("MapChip", MAPEDIT_VIEW_X);
+MAPCHIP_CONFIG_ELEMENT("MapChip", MAPEDIT_VIEW_Y);
 
 #pragma endregion
 
@@ -109,6 +127,8 @@ public:
 		MAPCHIP_INSERT("MapChip", MAPCHIP_VIEW_Y);
 		MAPCHIP_INSERT("MapChip", MAPCHIP_FRAME_WIDTH);
 		MAPCHIP_INSERT("MapChip", MAPCHIP_FRAME_HEIGHT);
+		MAPCHIP_INSERT("MapChip", MAPEDIT_VIEW_X);
+		MAPCHIP_INSERT("MapChip", MAPEDIT_VIEW_Y);
 	}
 
 	inline int LoadInt(const std::string& _section, const std::string& _name)

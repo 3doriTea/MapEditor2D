@@ -13,7 +13,7 @@ namespace
 }
 
 MapChip::MapChip() :
-	Frame{ false },
+	Frame{ true },
 	pHTileHandles_{},
 	grid_{ config_.MAPCHIP_VIEW_X, config_.MAPCHIP_VIEW_X, config_.TILE_PIX_SIZE, config_.TILE_PIX_SIZE },
 	selectedIndex_{ -1 },
@@ -32,8 +32,9 @@ MapChip::MapChip() :
 			.Build()
 	}
 {
-	SetOffset(Screen::WIDTH - config_.TILE_PIX_SIZE * config_.MAPCHIP_VIEW_X, 0);
-	SetSize(config_.TILE_PIX_SIZE * config_.MAPCHIP_VIEW_X, Screen::HEIGHT);
+	SetTitle("マップチップ");
+	SetOffset(Screen::WIDTH - config_.TILE_PIX_SIZE * config_.MAPCHIP_VIEW_X, 30);
+	SetSize(config_.TILE_PIX_SIZE * config_.MAPCHIP_VIEW_X, config_.TILE_PIX_SIZE * config_.MAPCHIP_VIEW_Y);
 
 	pHTileHandles_ = std::vector<int>(config_.TILES_Y * config_.TILES_X);
 	LoadDivGraph(
@@ -83,6 +84,17 @@ void MapChip::UpdateFrame()
 
 		int scroll = GetMouseWheelRotVol();
 
+		int maxViewX{ config_.TILES_X - config_.MAPCHIP_VIEW_X };
+		if (maxViewX < 0)
+		{
+			maxViewX = 0;
+		}
+		int maxViewY{ config_.TILES_Y - config_.MAPCHIP_VIEW_Y };
+		if (maxViewY < 0)
+		{
+			maxViewY = 0;
+		}
+
 		if (Input::IsKey(KEY_INPUT_LSHIFT))
 		{
 			showOffsetX_ -= scroll;
@@ -90,9 +102,9 @@ void MapChip::UpdateFrame()
 			{
 				showOffsetX_ = 0;
 			}
-			else if (showOffsetX_ >= config_.TILES_X)
+			else if (showOffsetX_ > maxViewX)
 			{
-				showOffsetX_ = config_.TILES_X - 1;
+				showOffsetX_ = maxViewX;
 			}
 		}
 		else
@@ -102,9 +114,9 @@ void MapChip::UpdateFrame()
 			{
 				showOffsetY_ = 0;
 			}
-			else if (showOffsetY_ >= config_.TILES_Y)
+			else if (showOffsetY_ > maxViewY)
 			{
-				showOffsetY_ = config_.TILES_Y - 1;
+				showOffsetY_ = maxViewY;
 			}
 		}
 	}
@@ -112,6 +124,8 @@ void MapChip::UpdateFrame()
 
 void MapChip::DrawFrame()
 {
+	DrawBox(offsetX_, offsetY_, offsetX_ + width_, offsetY_ + height_, 0xffffff, TRUE);
+
 	if (IsOnCursor())  // カーソルが入っているとき、枠を赤く表示する
 	{
 		DrawBox(
@@ -124,10 +138,17 @@ void MapChip::DrawFrame()
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(0xff * 0.5f));
 	}
 
-	// 各タイルの描画
-	DrawBox(offsetX_, offsetY_, offsetX_ + width_, offsetY_ + height_, 0xffffff, TRUE);
+	/*for (int y = 0; y < config_.MAPCHIP_VIEW_Y; y++)
+	{
+		for (int x = 0; x < config_.MAPCHIP_VIEW_X; x++)
+		{
+			
+			GetTileHandle(GetTileIndex(x, y))
+		}
+	}*/
 	
-	for (int y = 0; y < config_.TILES_Y; y++)
+	// 各タイルの描画
+	for (int y = 0; y < config_.MAPCHIP_VIEW_Y; y++)
 	{
 		int tileY = y + showOffsetY_;
 		if (tileY < 0 || config_.TILES_Y <= tileY)
@@ -135,7 +156,7 @@ void MapChip::DrawFrame()
 			continue;
 		}
 
-		for (int x = 0; x < config_.TILES_X; x++)
+		for (int x = 0; x < config_.MAPCHIP_VIEW_X; x++)
 		{
 			int tileX = x + showOffsetX_;
 			if (tileX < 0 || config_.TILES_X <= tileX)

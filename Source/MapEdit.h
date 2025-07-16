@@ -55,7 +55,7 @@ private:
 
 	static const int TILE_COLUMN_COUNT;
 
-	static const int EDIT_TILE_COLUMN_COUNT;
-	static const int EDIT_TILE_ROW_COUNT;
+	//static const int EDIT_TILE_COLUMN_COUNT;
+	//static const int EDIT_TILE_ROW_COUNT;
 };
 

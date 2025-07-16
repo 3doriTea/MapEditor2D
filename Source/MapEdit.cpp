@@ -24,8 +24,8 @@ namespace
 
 MapEdit::MapEdit() :
 	Frame{ true },
-	myMap_(EDIT_TILE_ROW_COUNT * EDIT_TILE_COLUMN_COUNT, -1),
-	grid_{ config_.TILE_PIX_SIZE * EDIT_TILE_COLUMN_COUNT, config_.TILE_PIX_SIZE * EDIT_TILE_ROW_COUNT, 32, 32 },
+	myMap_(config_.MAPEDIT_VIEW_Y * config_.MAPEDIT_VIEW_X, -1),
+	grid_{ config_.TILE_PIX_SIZE * config_.MAPEDIT_VIEW_X, config_.TILE_PIX_SIZE * config_.MAPEDIT_VIEW_Y, 32, 32 },
 	config_
 	{
 		MapChipConfigBuilder{}
@@ -36,11 +36,14 @@ MapEdit::MapEdit() :
 			.Load("MapChip", "MAPCHIP_VIEW_Y")
 			.Load("MapChip", "MAPCHIP_FRAME_WIDTH")
 			.Load("MapChip", "MAPCHIP_FRAME_HEIGHT")
+			.Load("MapChip", "MAPEDIT_VIEW_X")
+			.Load("MapChip", "MAPEDIT_VIEW_Y")
 			.Build()
 	}
 {
+
 	SetOffset(50, 50);
-	SetSize(config_.TILE_PIX_SIZE * EDIT_TILE_COLUMN_COUNT, config_.TILE_PIX_SIZE * EDIT_TILE_ROW_COUNT);
+	SetSize(config_.TILE_PIX_SIZE * config_.MAPEDIT_VIEW_X, config_.TILE_PIX_SIZE * config_.MAPEDIT_VIEW_Y);
 
 	pHTileHandles_ = std::vector<int>(config_.TILES_Y * config_.TILES_X);
 	LoadDivGraph(
@@ -128,11 +131,11 @@ void MapEdit::UpdateFrame()
 
 void MapEdit::DrawFrame()
 {
-	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
+	for (int y = 0; y < config_.MAPEDIT_VIEW_Y; y++)
 	{
-		for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
+		for (int x = 0; x < config_.MAPEDIT_VIEW_X; x++)
 		{
-			const int INDEX = y * EDIT_TILE_COLUMN_COUNT + x;
+			const int INDEX = y * config_.MAPEDIT_VIEW_X + x;
 			DrawGraph(offsetX_ + x * config_.TILE_PIX_SIZE, offsetY_ + y * config_.TILE_PIX_SIZE,
 				myMap_[INDEX], TRUE);
 		}
@@ -140,20 +143,20 @@ void MapEdit::DrawFrame()
 
 #if USE_BOX_GRID
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(0xff * 0.5f));
-	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
+	for (int y = 0; y < config_.MAPEDIT_VIEW_Y; y++)
 	{
 		DrawLine(
 			offsetX_, y * config_.TILE_PIX_SIZE + offsetY_,
-			EDIT_TILE_COLUMN_COUNT * config_.TILE_PIX_SIZE + offsetX_,
+			config_.MAPEDIT_VIEW_X * config_.TILE_PIX_SIZE + offsetX_,
 			y * config_.TILE_PIX_SIZE + offsetY_,
 			0xffffff, 1);
 	}
 
-	for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
+	for (int x = 0; x < config_.MAPEDIT_VIEW_X; x++)
 	{
 		DrawLine(
 			x * config_.TILE_PIX_SIZE + offsetX_, offsetY_,
-			x * config_.TILE_PIX_SIZE + offsetX_, EDIT_TILE_ROW_COUNT * config_.TILE_PIX_SIZE + offsetY_,
+			x * config_.TILE_PIX_SIZE + offsetX_, config_.MAPEDIT_VIEW_Y * config_.TILE_PIX_SIZE + offsetY_,
 			0xffffff, 1);
 		/*DrawBox(
 			x * TILE_WIDTH + offsetX_, y * TILE_HEIGHT + offsetY_,
@@ -165,15 +168,15 @@ void MapEdit::DrawFrame()
 
 	DrawBox(  // Žü‚è‚Ì˜gü‚ð•`‰æ‚·‚é
 		offsetX_, offsetY_,
-		EDIT_TILE_COLUMN_COUNT * config_.TILE_PIX_SIZE + offsetX_, EDIT_TILE_ROW_COUNT * config_.TILE_PIX_SIZE + offsetY_,
+		config_.MAPEDIT_VIEW_X * config_.TILE_PIX_SIZE + offsetX_, config_.MAPEDIT_VIEW_Y * config_.TILE_PIX_SIZE + offsetY_,
 		0xff0000, FALSE, 3
 	);
 
 #if USE_BOX_GRID
 #else
-	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
+	for (int y = 0; y < config_.MAPEDIT_VIEW_Y; y++)
 	{
-		for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
+		for (int x = 0; x < config_.MAPEDIT_VIEW_X; x++)
 		{
 			/*DrawBox(
 				x * TILE_WIDTH + offsetX_, y * TILE_HEIGHT + offsetY_,
@@ -195,8 +198,8 @@ void MapEdit::DrawFrame()
 	}
 
 	if (false == (
-		0 <= touchTileX && touchTileX < EDIT_TILE_COLUMN_COUNT &&
-		0 <= touchTileY && touchTileY < EDIT_TILE_ROW_COUNT))
+		0 <= touchTileX && touchTileX < config_.MAPEDIT_VIEW_X &&
+		0 <= touchTileY && touchTileY < config_.MAPEDIT_VIEW_Y))
 	{
 		return;  // ”ÍˆÍŠO‚È‚ç‘I‘ð˜g‚ð•\Ž¦‚µ‚È‚¢
 	}
@@ -225,13 +228,13 @@ void MapEdit::DrawFrame()
 		// “h‚è‚Â‚Ô‚µ
 		if (Input::IsKey(KEY_INPUT_F))
 		{
-			const int INDEX{ touchTileY * EDIT_TILE_COLUMN_COUNT + touchTileX };
+			const int INDEX{ touchTileY * config_.MAPEDIT_VIEW_X + touchTileX };
 			Fill(tile, myMap_[INDEX], INDEX);
 		}
 		// 1ƒ^ƒCƒ‹‚¾‚¯•ÏX
 		else
 		{
-			myMap_[touchTileY * EDIT_TILE_COLUMN_COUNT + touchTileX] = tile;
+			myMap_[touchTileY * config_.MAPEDIT_VIEW_X + touchTileX] = tile;
 		}
 	}
 }
@@ -254,19 +257,19 @@ void MapEdit::Fill(const int _fillHImage, const int _checkHImage, int _pickIndex
 	// 4•ûŒü‚ÉÄ‹A“I
 	Fill(_fillHImage, _checkHImage, ToSafeNeighbor(_pickIndex, +1));
 	Fill(_fillHImage, _checkHImage, ToSafeNeighbor(_pickIndex, -1));
-	Fill(_fillHImage, _checkHImage, ToSafeNeighbor(_pickIndex, +EDIT_TILE_COLUMN_COUNT));
-	Fill(_fillHImage, _checkHImage, ToSafeNeighbor(_pickIndex, -EDIT_TILE_COLUMN_COUNT));
+	Fill(_fillHImage, _checkHImage, ToSafeNeighbor(_pickIndex, +config_.MAPEDIT_VIEW_X));
+	Fill(_fillHImage, _checkHImage, ToSafeNeighbor(_pickIndex, -config_.MAPEDIT_VIEW_X));
 }
 
 int MapEdit::ToSafeNeighbor(const int _from, const int _to)
 {
 	int moved = _from + _to;
 
-	int fromX{ _from % EDIT_TILE_COLUMN_COUNT };
-	int fromY{ _from / EDIT_TILE_COLUMN_COUNT };
+	int fromX{ _from % config_.MAPEDIT_VIEW_X };
+	int fromY{ _from / config_.MAPEDIT_VIEW_X };
 
-	int movedX{ moved % EDIT_TILE_COLUMN_COUNT };
-	int movedY{ moved / EDIT_TILE_COLUMN_COUNT };
+	int movedX{ moved % config_.MAPEDIT_VIEW_X };
+	int movedY{ moved / config_.MAPEDIT_VIEW_X };
 
 	if (std::abs(fromX - movedX) > 1 || std::abs(fromY - movedY) > 1)
 	{
@@ -311,14 +314,14 @@ void MapEdit::SaveMapData(const std::string& _filePath)
 
 	ofs << "#TinyMapData" << std::endl;
 
-	ofs << EDIT_TILE_COLUMN_COUNT << " " << EDIT_TILE_ROW_COUNT << std::endl;
+	ofs << config_.MAPEDIT_VIEW_X << " " << config_.MAPEDIT_VIEW_Y << std::endl;
 
 	ofs << "#DATA" << std::endl;
-	for (int y = 0; y < EDIT_TILE_ROW_COUNT; y++)
+	for (int y = 0; y < config_.MAPEDIT_VIEW_Y; y++)
 	{
-		for (int x = 0; x < EDIT_TILE_COLUMN_COUNT; x++)
+		for (int x = 0; x < config_.MAPEDIT_VIEW_X; x++)
 		{
-			int handle{ myMap_[x + y * EDIT_TILE_COLUMN_COUNT] };
+			int handle{ myMap_[x + y * config_.MAPEDIT_VIEW_X] };
 			if (handle == -1)
 			{
 				ofs << -1;
@@ -328,7 +331,7 @@ void MapEdit::SaveMapData(const std::string& _filePath)
 				ofs << GetChipIndex(handle);
 			}
 
-			if (x != EDIT_TILE_COLUMN_COUNT - 1)
+			if (x != config_.MAPEDIT_VIEW_X - 1)
 			{
 				ofs << ",";
 			}
@@ -409,6 +412,3 @@ void MapEdit::LoadMapData(const std::string& _filePath)
 }
 
 const int MapEdit::TILE_COLUMN_COUNT{ 16 };
-
-const int MapEdit::EDIT_TILE_COLUMN_COUNT{ 20 };
-const int MapEdit::EDIT_TILE_ROW_COUNT{ 20 };
