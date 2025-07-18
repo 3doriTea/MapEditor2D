@@ -16,7 +16,8 @@ MapChip::MapChip() :
 	Frame{ true },
 	pHTileHandles_{},
 	grid_{ config_.MAPCHIP_VIEW_X, config_.MAPCHIP_VIEW_X, config_.TILE_PIX_SIZE, config_.TILE_PIX_SIZE },
-	selectedIndex_{ -1 },
+	//selectedIndex_{ -1 },
+	selectedIndexes_{},
 	showOffsetX_{ 0 },
 	showOffsetY_{ 0 },
 	config_
@@ -52,25 +53,69 @@ MapChip::~MapChip()
 	}
 }
 
-bool MapChip::TryGetSelectedTile(int* _pIndex, int* _pHandle)
+bool MapChip::TryGetSelectedMapChip(SelectMapChips& _selectedMapChip)
 {
-	if (selectedIndex_ == -1)
+	if (selectedIndexes_.size() <= 0)
 	{
 		return false;
 	}
 
-	*_pIndex = selectedIndex_;
-	*_pHandle = pHTileHandles_[selectedIndex_];
+	_selectedMapChip.clear();
+
+	int pivotChipIndex{ *selectedIndexes_.begin() };
+	int pivotX{};
+	int pivotY{};
+
+	ToLocalTilePos(pivotChipIndex, &pivotX, &pivotY);
+
+	pivotX += showOffsetX_;
+	pivotY += showOffsetY_;
+
+	for (auto&& index : selectedIndexes_)
+	{
+		int selectedOffsetX{};
+		int selectedOffsetY{};
+
+		ToLocalTilePos(index, &selectedOffsetX, &selectedOffsetY);
+
+		selectedOffsetX += showOffsetX_;
+		selectedOffsetY += showOffsetY_;
+
+		_selectedMapChip.push_back(
+			{
+				index,
+				pHTileHandles_[index],
+				selectedOffsetX - pivotX,
+				selectedOffsetY - pivotY,
+			});
+	}
 
 	return true;
 }
+
+//bool MapChip::TryGetSelectedTile(int* _pIndex, int* _pHandle)
+//{
+//	//if (selectedIndex_ == -1)
+//	if (selectedIndexes_.size() <= 0)
+//	{
+//		return false;
+//	}
+//
+//	//*_pIndex = selectedIndex_;
+//
+//	*_pIndex = *selectedIndexes_.begin();
+//	*_pHandle = pHTileHandles_[*selectedIndexes_.begin()];
+//
+//	return true;
+//}
 
 void MapChip::UpdateFrame()
 {
 	// 右クリックキャンセル
 	if (Input::IsMouseDown(MOUSE_INPUT_RIGHT))
 	{
-		selectedIndex_ = -1;
+		//selectedIndex_ = -1;
+		selectedIndexes_.clear();
 	}
 
 	if (IsOnCursor())
@@ -79,7 +124,14 @@ void MapChip::UpdateFrame()
 		{
 			int touchTileX{}, touchTileY{};
 			GetTouchTilePos(&touchTileX, &touchTileY);
-			selectedIndex_ = GetTileIndex(touchTileX, touchTileY);//touchTileY * config_.MAPCHIP_VIEW_X + touchTileX + tileOffset_;
+			//selectedIndex_ = GetTileIndex(touchTileX, touchTileY);//touchTileY * config_.MAPCHIP_VIEW_X + touchTileX + tileOffset_;
+
+			if (Input::IsKey(KEY_INPUT_LSHIFT) == false)
+			{
+				selectedIndexes_.clear();
+			}
+
+			selectedIndexes_.insert(GetTileIndex(touchTileX, touchTileY));
 		}
 
 		int scroll = GetMouseWheelRotVol();
@@ -176,23 +228,28 @@ void MapChip::DrawFrame()
 
 	// 選択タイルの表示
 	// 選択されているタイルがある
-	if (selectedIndex_ != -1)
+	//if (selectedIndex_ != -1)
+	if (selectedIndexes_.size() > 0)
 	{
-		int selectedTileX{}, selectedTileY{};
-		ToLocalTilePos(selectedIndex_, &selectedTileX, &selectedTileY);
-
-		// 選択されているタイルが表示範囲内
-		if (CheckIsInView(selectedTileX, selectedTileY))
+		for (auto&& index : selectedIndexes_)
 		{
-			DrawBox(
-				selectedTileX * config_.TILE_PIX_SIZE + offsetX_ - SELECTED_FRAME_PADDING, selectedTileY * config_.TILE_PIX_SIZE + offsetY_ - SELECTED_FRAME_PADDING,
-				(selectedTileX + 1) * config_.TILE_PIX_SIZE + offsetX_ + SELECTED_FRAME_PADDING, (selectedTileY + 1) * config_.TILE_PIX_SIZE + offsetY_ + SELECTED_FRAME_PADDING,
-				0xff00ff, TRUE);
-			DrawGraph(
-				selectedTileX * config_.TILE_PIX_SIZE + offsetX_,
-				selectedTileY * config_.TILE_PIX_SIZE + offsetY_,
-				pHTileHandles_[selectedIndex_],
-				TRUE);
+			int selectedTileX{}, selectedTileY{};
+			//ToLocalTilePos(selectedIndex_, &selectedTileX, &selectedTileY);
+			ToLocalTilePos(index, &selectedTileX, &selectedTileY);
+
+			// 選択されているタイルが表示範囲内
+			if (CheckIsInView(selectedTileX, selectedTileY))
+			{
+				DrawBox(
+					selectedTileX * config_.TILE_PIX_SIZE + offsetX_ - SELECTED_FRAME_PADDING, selectedTileY * config_.TILE_PIX_SIZE + offsetY_ - SELECTED_FRAME_PADDING,
+					(selectedTileX + 1) * config_.TILE_PIX_SIZE + offsetX_ + SELECTED_FRAME_PADDING, (selectedTileY + 1) * config_.TILE_PIX_SIZE + offsetY_ + SELECTED_FRAME_PADDING,
+					0xff00ff, TRUE);
+				DrawGraph(
+					selectedTileX * config_.TILE_PIX_SIZE + offsetX_,
+					selectedTileY * config_.TILE_PIX_SIZE + offsetY_,
+					pHTileHandles_[index],
+					TRUE);
+			}
 		}
 	}
 

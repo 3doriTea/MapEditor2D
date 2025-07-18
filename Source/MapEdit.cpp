@@ -158,10 +158,6 @@ void MapEdit::DrawFrame()
 			x * config_.TILE_PIX_SIZE + offsetX_, offsetY_,
 			x * config_.TILE_PIX_SIZE + offsetX_, config_.MAPEDIT_VIEW_Y * config_.TILE_PIX_SIZE + offsetY_,
 			0xffffff, 1);
-		/*DrawBox(
-			x * TILE_WIDTH + offsetX_, y * TILE_HEIGHT + offsetY_,
-			(x + 1) * TILE_WIDTH + offsetX_, (y + 1) * TILE_HEIGHT + offsetY_,
-			0xffffff, FALSE);*/
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0x00);
 #endif
@@ -171,20 +167,6 @@ void MapEdit::DrawFrame()
 		config_.MAPEDIT_VIEW_X * config_.TILE_PIX_SIZE + offsetX_, config_.MAPEDIT_VIEW_Y * config_.TILE_PIX_SIZE + offsetY_,
 		0xff0000, FALSE, 3
 	);
-
-#if USE_BOX_GRID
-#else
-	for (int y = 0; y < config_.MAPEDIT_VIEW_Y; y++)
-	{
-		for (int x = 0; x < config_.MAPEDIT_VIEW_X; x++)
-		{
-			/*DrawBox(
-				x * TILE_WIDTH + offsetX_, y * TILE_HEIGHT + offsetY_,
-				(x + 1) * TILE_WIDTH + offsetX_, (y + 1) * TILE_HEIGHT + offsetY_,
-				0xffffff, FALSE);*/
-		}
-	}
-#endif
 
 	int localX{}, localY{};
 	GetMousePointLocal(&localX, &localY);
@@ -209,7 +191,8 @@ void MapEdit::DrawFrame()
 		(touchTileX + 1) * config_.TILE_PIX_SIZE + offsetX_, (touchTileY + 1) * config_.TILE_PIX_SIZE + offsetY_,
 		COLOR::CYAN, FALSE, 8);
 
-	if (selectedIndex_ == -1)
+	//if (selectedIndexes_ == -1)
+	if (selectedIndexes_.size() <= 0)
 	{
 		return;
 	}
@@ -217,7 +200,8 @@ void MapEdit::DrawFrame()
 	// 左クリック中
 	if (Input::IsMouse(MOUSE_INPUT_LEFT))
 	{
-		int tile{ pHTileHandles_[selectedIndex_] };
+		//int tile{ pHTileHandles_[selectedIndex_] };
+		int tile{ pHTileHandles_[(*selectedIndexes_.begin()).index] };
 
 		// 削除モード
 		if (Input::IsKey(KEY_INPUT_LSHIFT))

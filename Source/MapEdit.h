@@ -4,6 +4,8 @@
 #include "Grid.h"
 #include <map>
 #include "MapChipConfig.h"
+#include "EditorCommon.h"
+
 
 class MapEdit : public Frame
 {
@@ -14,7 +16,9 @@ public:
 	void UpdateFrame() override;
 	void DrawFrame() override;
 
-	void SetSelectedIndex(const int _index) { selectedIndex_ = _index; }
+	//void SetSelectedIndex(const int _index) { selectedIndex_ = _index; }
+	void SetSelectedIndexes(const SelectMapChips& _selectedIndexes) { selectedIndexes_ = _selectedIndexes; }
+
 
 private:
 	/// <summary>
@@ -40,6 +44,8 @@ private:
 	/// <returns></returns>
 	int GetChipHandle(int _index);
 
+	int ToOffsetIndex(const int _addX, const int _addY);
+
 	void SaveMapData(const std::string& _filePath);
 	void LoadMapData(const std::string& _filePath);
 private:
@@ -51,7 +57,8 @@ private:
 
 	std::map<int, int> indexMap_;
 
-	int selectedIndex_;
+	//int selectedIndex_;
+	SelectMapChips selectedIndexes_;
 
 	static const int TILE_COLUMN_COUNT;
 

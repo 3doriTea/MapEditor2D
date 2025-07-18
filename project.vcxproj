@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\EditorCommon.h" />
     <ClInclude Include="Source\MapChipConfig.h" />
     <ClInclude Include="Source\Grid.h" />
     <ClInclude Include="Source\Input.h" />

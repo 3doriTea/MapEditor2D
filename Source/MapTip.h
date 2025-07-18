@@ -1,8 +1,10 @@
 #pragma once
 #include "Frame.h"
 #include <vector>
+#include <set>
 #include "Grid.h"
 #include "MapChipConfig.h"
+#include "EditorCommon.h"
 
 
 class MapChip : public Frame
@@ -11,7 +13,7 @@ public:
 	MapChip();
 	~MapChip();
 
-	bool TryGetSelectedTile(int* _pIndex, int* _pHandle);
+	bool TryGetSelectedMapChip(SelectMapChips& _pickedMapChip);
 
 	void UpdateFrame() override;
 	void DrawFrame() override;
@@ -51,7 +53,8 @@ private:
 	std::vector<int> pHTileHandles_;
 
 	int tileOffset_;
-	int selectedIndex_;  // 選択中の画像インデックス
+	//int selectedIndex_;  // 選択中の画像インデックス
+	std::set<int> selectedIndexes_;
 	int showOffsetX_;  // 表示する基準点
 	int showOffsetY_;  // 表示する基準点
 

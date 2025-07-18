@@ -131,6 +131,7 @@
     <ClInclude Include="Source\Input.h" />
     <ClInclude Include="Source\Particle.h" />
     <ClInclude Include="Source\MapChipConfig.h" />
+    <ClInclude Include="Source\EditorCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Library">

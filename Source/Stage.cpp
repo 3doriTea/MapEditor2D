@@ -3,6 +3,7 @@
 #include "MapTip.h"
 #include "MapEdit.h"
 #include "Input.h"
+#include "EditorCommon.h"
 
 namespace
 {
@@ -162,20 +163,37 @@ void Stage::Update()
 
 	int hImage_{};
 	int selectedIndex_{};
-	if (pMapTip_->TryGetSelectedTile(&selectedIndex_, &hImage_) == false)
+	/*if (pMapTip_->TryGetSelectedTile(&selectedIndex_, &hImage_) == false)
 	{
 		pMapEdit_->SetSelectedIndex(-1);
 		return;
+	}*/
+	SelectMapChips selectedMapChips{};
+	//if (pMapTip_->TryGetSelectedMapChip(pickedMapChips) == false)
+	//{
+	//	//pMapEdit_->SetSelectedIndex(-1);
+	//	pMapEdit_->SetSelectedIndex(-1);
+	//	return;
+	//}
+	bool hasSelectedMapChip{ pMapTip_->TryGetSelectedMapChip(selectedMapChips) };
+	pMapEdit_->SetSelectedIndexes(selectedMapChips);
+
+	if (hasSelectedMapChip)
+	{
+		int mx{}, my{};
+		GetMousePoint(&mx, &my);
+
+		int sizeX{}, sizeY{};
+		GetGraphSize(selectedMapChips.begin()->handle, &sizeX, &sizeY);
+		for (auto&& selected : selectedMapChips)
+		{
+			DrawGraph(
+				mx - sizeX / 2 + sizeX * selected.offsetX,
+				my - sizeY / 2 + sizeY * selected.offsetY,
+				selected.handle,
+				TRUE);
+		}
 	}
-	pMapEdit_->SetSelectedIndex(selectedIndex_);
-
-	int mx{}, my{};
-	GetMousePoint(&mx, &my);
-
-	int sizeX{}, sizeY{};
-	GetGraphSize(hImage_, &sizeX, &sizeY);
-	DrawGraph(mx - sizeX / 2, my - sizeY / 2, hImage_, TRUE);
-	//printfDx("aaaaa\n");
 }
 
 void Stage::Draw()
