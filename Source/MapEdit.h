@@ -44,7 +44,9 @@ private:
 	/// <returns></returns>
 	int GetChipHandle(int _index);
 
-	int ToOffsetIndex(const int _addX, const int _addY);
+	int ToOffsetIndex(
+		const int _pivotX, const int _pivotY,
+		const int _addX, const int _addY) const;
 
 	void SaveMapData(const std::string& _filePath);
 	void LoadMapData(const std::string& _filePath);

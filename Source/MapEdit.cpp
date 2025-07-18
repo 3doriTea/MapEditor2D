@@ -281,6 +281,15 @@ int MapEdit::GetChipHandle(int _index)
 	return pHTileHandles_[_index];
 }
 
+int MapEdit::ToOffsetIndex(
+	const int _pivotX, const int _pivotY,
+	const int _addX, const int _addY) const
+{
+	//_addX
+
+	return 0;
+}
+
 void MapEdit::SaveMapData(const std::string& _filePath)
 {
 	printfDx("File saved.\n");
