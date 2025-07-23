@@ -28,6 +28,15 @@ public:
 	{
 		frameTitle_ = _title;
 	}
+	
+	inline void SetDescription(const std::string& _desc)
+	{
+		frameDescription_ = _desc;
+	}
+	inline void AddDescription(const std::string& _desc)
+	{
+		frameDescription_ += _desc;	
+	}
 
 	inline void SetOffset(const int _offsetX, const int _offsetY)
 	{
@@ -53,6 +62,7 @@ private:
 	bool isOnCursor_;  // カーソルがフレームの中にあるかどうか
 	bool isDragging_;  // フレームをドラッグ中か
 	std::string frameTitle_;  // フレームのタイトル
+	std::string frameDescription_;  // フレームの説明
 
 private:
 	static Frame* druggingFrame_;  // 現在ドラッグ中のフレーム

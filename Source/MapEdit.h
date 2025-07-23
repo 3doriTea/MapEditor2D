@@ -29,7 +29,20 @@ private:
 	/// <param name="_pickIndex"></param>
 	void Fill(const int _fillHImage, const int _checkHImage, int _pickIndex);
 
-	int ToSafeNeighbor(const int _from, const int _to);
+	/// <summary>
+	/// 安全な4近傍移動に変換する
+	/// </summary>
+	/// <param name="_from">移動元</param>
+	/// <param name="_to">!!移動量!! !!相対的な移動量!!</param>
+	/// <returns>移動先 / 安全ではない場合、-1を返す</returns>
+	int ToSafeNeighbor(const int _from, const int _to) const;
+	/// <summary>
+	/// 安全な移動か
+	/// </summary>
+	/// <param name="_from">移動元</param>
+	/// <param name="_moved">!!移動先!!</param>
+	/// <returns>安全である true / false</returns>
+	bool IsSafeMove(const int _from, const int _moved) const;
 
 	/// <summary>
 	/// ハンドル to インデックス
@@ -43,6 +56,8 @@ private:
 	/// <param name="_index"></param>
 	/// <returns></returns>
 	int GetChipHandle(int _index);
+
+	void ToPoint(const int _index, int* _x, int* _y) const;
 
 	int ToOffsetIndex(
 		const int _pivotX, const int _pivotY,

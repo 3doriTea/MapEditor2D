@@ -7,6 +7,8 @@ namespace
 {
 	int TITLE_BAR_HEIGHT{ 30 };
 	int TITLE_TEXT_OFFSET_X{ 4 };
+	int TITLE_FONT_SIZE{ 16 };
+	int DESC_FONT_SIZE{ 10 };
 }
 
 Frame::Frame(bool _showTitleBar) :
@@ -16,7 +18,8 @@ Frame::Frame(bool _showTitleBar) :
 	height_{ 0 },
 	showTitleBar_{ _showTitleBar },
 	isDragging_{ false },
-	frameTitle_{ "" }
+	frameTitle_{ "" },
+	frameDescription_{ "" }
 {
 }
 
@@ -97,8 +100,19 @@ void Frame::Draw()
 	if (showTitleBar_)
 	{
 		DrawBox(offsetX_, offsetY_, offsetX_ + width_, offsetY_ - TITLE_BAR_HEIGHT, 0xffffff, TRUE);
+		
+		// É^ÉCÉgÉãÇÃï`âÊ
+		SetFontSize(TITLE_FONT_SIZE);
 		int textOffsetY = -TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - GetFontSize()) / 2;
 		DrawFormatString(TITLE_TEXT_OFFSET_X + offsetX_, textOffsetY + offsetY_, 0x000000, "%s", frameTitle_.c_str());
+		
+		// ê‡ñæï∂ÇÃï`âÊ
+		SetFontSize(DESC_FONT_SIZE);
+		int drawDescWidth{ GetDrawFormatStringWidth("%s", frameDescription_.c_str()) };
+		int descTextOffsetY{ -TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - GetFontSize()) / 2 };
+		DrawFormatString(width_ - TITLE_TEXT_OFFSET_X - drawDescWidth + offsetX_, descTextOffsetY + offsetY_, 0x000000, "%s", frameDescription_.c_str());
+
+		SetFontSize(DEFAULT_FONT_SIZE);
 	}
 
 	DrawFrame();

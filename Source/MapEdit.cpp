@@ -58,7 +58,7 @@ MapEdit::MapEdit() :
 		indexMap_.insert({ *itr, itr - pHTileHandles_.begin() });
 	}
 
-	SetTitle("マップを塗りつぶしていくタイルキャンバス");
+	SetTitle("マップ塗るキャンバス");
 }
 
 MapEdit::~MapEdit()
@@ -71,7 +71,10 @@ MapEdit::~MapEdit()
 
 void MapEdit::UpdateFrame()
 {
-	if (Input::IsKey(KEY_INPUT_LCONTROL) && Input::IsKeyDown(KEY_INPUT_S))
+	// コントロールキーが押されている
+	const bool ON_CONTROL_KEY{ Input::IsKey(KEY_INPUT_LCONTROL) };
+
+	if (ON_CONTROL_KEY && Input::IsKeyDown(KEY_INPUT_S))
 	{
 		OPENFILENAME of{};
 
@@ -99,7 +102,8 @@ void MapEdit::UpdateFrame()
 			// キャンセルされた
 		}
 	}
-	if (Input::IsKey(KEY_INPUT_LCONTROL) && Input::IsKeyDown(KEY_INPUT_R))
+
+	if (ON_CONTROL_KEY && Input::IsKeyDown(KEY_INPUT_R))
 	{
 		OPENFILENAME of{};
 
@@ -176,6 +180,7 @@ void MapEdit::DrawFrame()
 
 	if (localX < 0 || localY < 0)
 	{
+		SetDescription("");
 		return;  // 範囲外なら選択枠表示しない
 	}
 
@@ -183,44 +188,90 @@ void MapEdit::DrawFrame()
 		0 <= touchTileX && touchTileX < config_.MAPEDIT_VIEW_X &&
 		0 <= touchTileY && touchTileY < config_.MAPEDIT_VIEW_Y))
 	{
+		SetDescription("");
 		return;  // 範囲外なら選択枠を表示しない
 	}
+	
+	// 選択中のタイルを持っている
+	const bool HAS_SELECTED{ selectedIndexes_.size() > 0 };
+	const bool ON_LSHIFT{ Input::IsKey(KEY_INPUT_LSHIFT) };
+	const bool ON_F_KEY{ Input::IsKey(KEY_INPUT_F) };
 
-	DrawBox(
-		touchTileX * config_.TILE_PIX_SIZE + offsetX_, touchTileY * config_.TILE_PIX_SIZE + offsetY_,
-		(touchTileX + 1) * config_.TILE_PIX_SIZE + offsetX_, (touchTileY + 1) * config_.TILE_PIX_SIZE + offsetY_,
-		COLOR::CYAN, FALSE, 8);
-
-	//if (selectedIndexes_ == -1)
-	if (selectedIndexes_.size() <= 0)
+	if (HAS_SELECTED)
 	{
-		return;
+		// 選択タイルを持っているなら
+		SetDescription("マウス左");
+	
+		if (ON_LSHIFT && ON_F_KEY)
+		{
+			AddDescription("クリックで隣接する同じタイルを全部消せるよ！");
+		}
+		else if (ON_LSHIFT)
+		{
+			AddDescription("ドラッグで消せるよ！(F)+で塗りつぶし");
+		}
+		else if (ON_F_KEY)
+		{
+			AddDescription("クリックで塗りつぶせるよ！(LShift)+でタイル消し");
+		}
+		else  // なにもおされていない
+		{
+			AddDescription("ドラッグで塗れるよ！(F)+で塗りつぶし (LShift)+でタイル消し");
+		}
+	}
+	else  // 選択タイルを持っていない
+	{
+		SetDescription("マウスドラッグで範囲選択できるよ！");
 	}
 
 	// 左クリック中
 	if (Input::IsMouse(MOUSE_INPUT_LEFT))
 	{
-		//int tile{ pHTileHandles_[selectedIndex_] };
-		int tile{ pHTileHandles_[(*selectedIndexes_.begin()).index] };
+		if (HAS_SELECTED)  // 選択中のタイルがあるなら
+		{
+			// 選択中の全タイルを処理していく
+			for (auto itr = selectedIndexes_.begin(); itr != selectedIndexes_.end(); itr++)
+			{
+				int tile{ pHTileHandles_[(*itr).index]};
 
-		// 削除モード
-		if (Input::IsKey(KEY_INPUT_LSHIFT))
-		{
-			tile = -1;
-		}
+				// 削除モード
+				if (ON_LSHIFT)
+				{
+					tile = -1;
+				}
 
-		// 塗りつぶし
-		if (Input::IsKey(KEY_INPUT_F))
-		{
-			const int INDEX{ touchTileY * config_.MAPEDIT_VIEW_X + touchTileX };
-			Fill(tile, myMap_[INDEX], INDEX);
+				// 基準となるインデックス
+				const int INDEX_PIVOT{ touchTileY * config_.MAPEDIT_VIEW_X + touchTileX };
+
+				// 基準タイルしか選択されていない かつ 塗りつぶしが押されているなら
+				if (ON_F_KEY && selectedIndexes_.size() == 1)
+				{
+					Fill(tile, myMap_[INDEX_PIVOT], INDEX_PIVOT);
+				}
+				// 1タイルだけ変更
+				else
+				{
+					const int INDEX{ (touchTileY + (*itr).offsetY) * config_.MAPEDIT_VIEW_X + (touchTileX + (*itr).offsetX) };
+
+					if (IsSafeMove(INDEX_PIVOT, INDEX))
+					{
+						myMap_[INDEX] = tile;
+
+					}
+				}
+			}
 		}
-		// 1タイルだけ変更
-		else
+		else  // 選択中のタイルがない
 		{
-			myMap_[touchTileY * config_.MAPEDIT_VIEW_X + touchTileX] = tile;
+			
 		}
 	}
+
+	// 水色枠を描画するよ
+	DrawBox(
+		touchTileX * config_.TILE_PIX_SIZE + offsetX_, touchTileY * config_.TILE_PIX_SIZE + offsetY_,
+		(touchTileX + 1) * config_.TILE_PIX_SIZE + offsetX_, (touchTileY + 1) * config_.TILE_PIX_SIZE + offsetY_,
+		COLOR::CYAN, FALSE, 8);
 }
 
 void MapEdit::Fill(const int _fillHImage, const int _checkHImage, int _pickIndex)
@@ -245,22 +296,40 @@ void MapEdit::Fill(const int _fillHImage, const int _checkHImage, int _pickIndex
 	Fill(_fillHImage, _checkHImage, ToSafeNeighbor(_pickIndex, -config_.MAPEDIT_VIEW_X));
 }
 
-int MapEdit::ToSafeNeighbor(const int _from, const int _to)
+int MapEdit::ToSafeNeighbor(const int _from, const int _to) const
 {
 	int moved = _from + _to;
 
-	int fromX{ _from % config_.MAPEDIT_VIEW_X };
-	int fromY{ _from / config_.MAPEDIT_VIEW_X };
-
-	int movedX{ moved % config_.MAPEDIT_VIEW_X };
-	int movedY{ moved / config_.MAPEDIT_VIEW_X };
-
-	if (std::abs(fromX - movedX) > 1 || std::abs(fromY - movedY) > 1)
+	// 安全ではない移動に関しては配置しない
+	if (IsSafeMove(_from, moved) == false)
 	{
 		return -1;
 	}
 
 	return moved;
+}
+
+bool MapEdit::IsSafeMove(const int _from, const int _moved) const
+{
+	int fromX{}, fromY{};
+	ToPoint(_from, &fromX, &fromY);
+
+	int movedX{}, movedY{};
+	ToPoint(_moved, &movedX, &movedY);
+
+	// 2次元配列的に飛んでいる場所に関しては配置できない
+	if (std::abs(fromX - movedX) > 1 || std::abs(fromY - movedY) > 1)
+	{
+		return false;
+	}
+
+	// そもそも一次元で範囲外ならだめ
+	if (_moved < 0 || myMap_.size() <= _moved)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 int MapEdit::GetChipIndex(int _hImage)
@@ -279,6 +348,12 @@ int MapEdit::GetChipHandle(int _index)
 		return -1;
 	}
 	return pHTileHandles_[_index];
+}
+
+void MapEdit::ToPoint(const int _index, int* _x, int* _y) const
+{
+	*_x = _index % config_.MAPEDIT_VIEW_X;
+	*_y = _index / config_.MAPEDIT_VIEW_X;
 }
 
 int MapEdit::ToOffsetIndex(
