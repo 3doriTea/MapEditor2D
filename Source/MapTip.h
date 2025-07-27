@@ -54,7 +54,7 @@ private:
 
 	int tileOffset_;
 	//int selectedIndex_;  // 選択中の画像インデックス
-	std::set<int> selectedIndexes_;
+	std::vector<int> selectedIndexes_;
 	int showOffsetX_;  // 表示する基準点
 	int showOffsetY_;  // 表示する基準点
 

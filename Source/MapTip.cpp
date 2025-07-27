@@ -131,7 +131,25 @@ void MapChip::UpdateFrame()
 				selectedIndexes_.clear();
 			}
 
-			selectedIndexes_.insert(GetTileIndex(touchTileX, touchTileY));
+			// 8近傍であるか
+			bool isNear8{ true };
+			// 基準として選ばれているタイルがある
+			if (selectedIndexes_.size() > 0)
+			{
+				int x{}, y{};
+				ToLocalTilePos(selectedIndexes_[0], &x, &y);
+				x -= touchTileX;
+				y -= touchTileY;
+				if (x * x > 1 || y * y > 1)
+				{
+					isNear8 = false;  // 8近傍ではない！
+				}
+			}
+
+			if (isNear8)  // 8近傍のときだけ追加
+			{
+				selectedIndexes_.push_back(GetTileIndex(touchTileX, touchTileY));
+			}
 		}
 
 		int scroll = GetMouseWheelRotVol();
